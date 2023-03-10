@@ -30,4 +30,10 @@ public class Controller {
         twitch_connection.removeChannel("tubbo");
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @GetMapping("/clips")
+    public ResponseEntity<Object> getClips() throws Exception {
+        twitch_connection.getUsers();
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

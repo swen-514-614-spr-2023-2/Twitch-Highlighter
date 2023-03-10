@@ -48,7 +48,10 @@ public class ApiHandler {
     public enum PATH {
         CONNECT("irc.twitch.tv", 6667),
         OAUTH_TOKEN("oauth2/token", 0),
-        OAUTH_VALIDATE("oauth2/validate", 0);
+        OAUTH_VALIDATE("oauth2/validate", 0),
+        GET_USERS("helix/users", 0),
+        GET_CHANNEL("helix/channels", 0),
+        CLIPS("helix/clips", 0);
 
         private String path;
         private Integer ip;
@@ -65,7 +68,8 @@ public class ApiHandler {
         JSONObject credentials = getTwitchCredentialsFromMongoDB();
         this.clientId = credentials.getString("client_id");
         this.clientSecret = credentials.getString("client_secret");
-        this.domain = HTTPS + "id.twitch.tv";
+        this.authorization_domain = HTTPS + "id.twitch.tv";
+        this.domain = HTTPS + "api.twitch.tv";
         this.connectionTimeOut = 5000;
         this.socketTimeOut = 5000;
         this.userName = credentials.getString("user_name");
@@ -77,6 +81,7 @@ public class ApiHandler {
     private JSONObject headers;
     private JSONObject body;
     private String domain;
+    private String authorization_domain;
     private String path;
     private Integer connectionTimeOut;
     private Integer socketTimeOut;
@@ -189,7 +194,7 @@ public class ApiHandler {
     private String validateAndUpdateAccessToken() throws Exception {
         String result = "";
         int status;
-        HttpGet httpGet = new HttpGet(domain + SLASH + PATH.OAUTH_VALIDATE.path);
+        HttpGet httpGet = new HttpGet(authorization_domain + SLASH + PATH.OAUTH_VALIDATE.path);
 
         // Headers Part
         httpGet.setHeader("Authorization", "Bearer " + accessToken);
@@ -226,7 +231,7 @@ public class ApiHandler {
     private String generateAccessToken() throws Exception {
         String result = "";
         int status;
-        HttpPost httpPost = new HttpPost(domain + SLASH + PATH.OAUTH_TOKEN.path);
+        HttpPost httpPost = new HttpPost(authorization_domain + SLASH + PATH.OAUTH_TOKEN.path);
 
         // Headers Part
         httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -315,7 +320,7 @@ public class ApiHandler {
         checkRequestQuality();
         validateAndUpdateAccessToken();
         String result = "";
-        HttpPost httpPost = new HttpPost(domain + path);
+        HttpPost httpPost = new HttpPost(domain + SLASH + path);
 
         // Headers Part
         if (!headers.isEmpty()) {
@@ -354,7 +359,8 @@ public class ApiHandler {
         checkRequestQuality();
         validateAndUpdateAccessToken();
         String result = "";
-        HttpGet httpGet = new HttpGet(domain + path);
+        int status;
+        HttpGet httpGet = new HttpGet(domain + SLASH + path);
 
         // Headers Part
         if (!headers.isEmpty()) {
@@ -379,6 +385,7 @@ public class ApiHandler {
         try (CloseableHttpClient httpClient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpClient.execute(httpGet)) {
 
+            status = response.getStatusLine().getStatusCode();
             result = EntityUtils.toString(response.getEntity());
         }
 
@@ -390,7 +397,7 @@ public class ApiHandler {
         checkRequestQuality();
         validateAndUpdateAccessToken();
         String result = "";
-        HttpPut httpPut = new HttpPut(domain + path);
+        HttpPut httpPut = new HttpPut(domain + SLASH + path);
 
         // Headers Part
         if (!headers.isEmpty()) {
@@ -429,7 +436,7 @@ public class ApiHandler {
         checkRequestQuality();
         validateAndUpdateAccessToken();
         String result = "";
-        HttpDelete httpDelete = new HttpDelete(domain + path);
+        HttpDelete httpDelete = new HttpDelete(domain + SLASH + path);
 
         // Headers Part
         if (!headers.isEmpty()) {
@@ -480,6 +487,10 @@ public class ApiHandler {
         }
         if (!(headers.has("Authorization") && path.equals(PATH.CONNECT.path))) {
             headers.put("Authorization", "Bearer " + accessToken);
+        }
+        if(headers.has("set_client_id")){
+            headers.put(headers.getString("set_client_id"), this.clientId);
+            headers.remove("set_client_id");
         }
     }
 

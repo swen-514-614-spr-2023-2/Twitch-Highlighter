@@ -6,11 +6,11 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
+import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import com.twitch.bot.api.ApiHandler;
+import com.twitch.bot.api.ApiHandler.PATH;
 import com.twitch.bot.model.Channel;
 import com.twitch.bot.model.User;
 
@@ -125,8 +125,7 @@ public class Connection {
         str = currentLine.split("!");
         String msg_user = str[0].substring(1, str[0].length());
         str = currentLine.split(" ");
-        Channel msg_channel;
-        msg_channel = ChannelsData.getChannel(str[2], this);
+        Channel msg_channel = ChannelsData.getChannel(str[2], this);
         User user = ChannelsData.getUser(msg_user);
         String msg_msg = currentLine.substring((str[0].length() + str[1].length() + str[2].length() + 4), currentLine.length());
         LOG.log(Level.INFO, "> " + msg_channel + " | " + msg_user + " >> " + msg_msg);
@@ -153,4 +152,22 @@ public class Connection {
 	{
 	
 	}
+
+    public void getUsers() throws Exception{
+        String response = apiHandler.setPath(PATH.GET_USERS).setParams(new JSONObject().put("login", "tubbo")).setHeaders(new JSONObject().put("set_client_id", "Client-Id")).GET();
+        JSONObject responseData = new JSONObject(response);
+        String broadcaster_id = responseData.getJSONArray("data").getJSONObject(0).getString("id");
+        LOG.log(Level.INFO, "broadcaster_id :::: " + broadcaster_id);
+        makeClips(broadcaster_id);
+    }
+
+    public void makeClips(String broadcaster_id) throws Exception{
+        String response = apiHandler.setPath(PATH.CLIPS).setParams(new JSONObject().put("broadcaster_id", broadcaster_id)).setHeaders(new JSONObject().put("set_client_id", "Client-Id")).POST();
+        JSONObject responseData = new JSONObject(response);
+        String clip_id = responseData.getJSONArray("data").getJSONObject(0).getString("id");
+        LOG.log(Level.INFO, "clip_id :::: " + clip_id);
+        Thread.sleep(500);//*Thread Sleeps so that the create clip is done generating on twitch side */
+        response = apiHandler.setPath(PATH.CLIPS).setParams(new JSONObject().put("id", "GoodObedientGazelleBigBrother-4fwYP4VvZEr4BcNg")).setHeaders(new JSONObject().put("set_client_id", "Client-Id")).GET();
+        LOG.log(Level.INFO, "response :::: " + response);
+    }
 }
