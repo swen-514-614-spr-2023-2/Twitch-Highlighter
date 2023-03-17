@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component;
 
 import com.twitch.bot.api.ApiHandler;
 import com.twitch.bot.api.ApiHandler.PATH;
+import com.twitch.bot.db_utils.TwitchData;
 import com.twitch.bot.model.Channel;
-import com.twitch.bot.model.User;
 
 @Component
 public class Connection {
@@ -22,6 +22,7 @@ public class Connection {
     private Boolean isStartReadingMessagesStarted = false;
     private BufferedReader twitch_reader;
     private BufferedWriter twitch_writer;
+    private TwitchData twitchData;
 
     public BufferedReader getTwitch_reader() {
         return twitch_reader;
@@ -31,8 +32,9 @@ public class Connection {
         return twitch_writer;
     }
 
-    public Connection(ApiHandler apiHandler) {
+    public Connection(ApiHandler apiHandler, TwitchData twitchData) {
         this.apiHandler = apiHandler;
+        this.twitchData = twitchData;
     }
 
     public void sendCommandMessage(Object message) {
@@ -47,7 +49,7 @@ public class Connection {
 
     public void sendMessage(Object message, Channel channel) {
         try {
-            this.twitch_writer.write("PRIVMSG " + channel.getChannel() + " :" + message.toString() + "\r\n");
+            this.twitch_writer.write("PRIVMSG " + "#" + channel.getChannelName() + " :" + message.toString() + "\r\n");
             this.twitch_writer.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -125,33 +127,32 @@ public class Connection {
         str = currentLine.split("!");
         String msg_user = str[0].substring(1, str[0].length());
         str = currentLine.split(" ");
-        Channel msg_channel = ChannelsData.getChannel(str[2], this);
-        User user = ChannelsData.getUser(msg_user);
+        Channel msg_channel = ChannelsData.getChannel(str[2].startsWith("#") ? str[2].substring(1) : str[2], this);
         String msg_msg = currentLine.substring((str[0].length() + str[1].length() + str[2].length() + 4), currentLine.length());
-        LOG.log(Level.INFO, "> " + msg_channel + " | " + msg_user + " >> " + msg_msg);
+        LOG.log(Level.INFO, "Channel Details : " + msg_channel + " ||| User : " + msg_user + " ||| Messsage : " + msg_msg);
         if (msg_msg.startsWith("!")){
-            processCommand(user, msg_channel, msg_msg.substring(1));
+            processCommand(msg_user, msg_channel, msg_msg.substring(1));
         }
-        if (msg_user.toString().equals("jtv") && msg_msg.contains("now hosting")) {
-            String hoster = msg_msg.split(" ")[0];
-            processHost(ChannelsData.getUser(hoster), msg_channel);
-        }
-        processMessage(user, msg_channel, msg_msg);
+        // if (msg_user.toString().equals("jtv") && msg_msg.contains("now hosting")) {
+        //     String hoster = msg_msg.split(" ")[0];
+        //     processHost(ChannelsData.getUser(hoster), msg_channel);
+        // }
+        processMessage(msg_user, msg_channel, msg_msg);
     }
 
-    private void processCommand(User user, Channel channel, String command){
+    private void processCommand(String user, Channel channel, String command){
 
     }
 
-    private void processMessage(User user, Channel channel, String message)
+    private void processMessage(String user, Channel channel, String message)
 	{
-		
+        twitchData.addTwitchMessage(user, channel, message, System.currentTimeMillis());
 	}
 
-    private void processHost(User hoster, Channel hosted)
-	{
+    // private void processHost(User hoster, Channel hosted)
+	// {
 	
-	}
+	// }
 
     public void getUsers() throws Exception{
         String response = apiHandler.setPath(PATH.GET_USERS).setParams(new JSONObject().put("login", "tubbo")).setHeaders(new JSONObject().put("set_client_id", "Client-Id")).GET();

@@ -1,16 +1,7 @@
 package com.twitch.bot.api;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import com.mongodb.ConnectionString;
-import com.mongodb.MongoClientSettings;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Updates;
+import com.twitch.bot.db_utils.TwitchData;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -32,14 +23,12 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.bson.Document;
 import org.json.JSONObject;
-
-import static com.mongodb.client.model.Filters.eq;
 
 @Component
 public class ApiHandler {
     private static final Logger LOG = Logger.getLogger(ApiHandler.class.getName());
+    TwitchData twitchData;
 
     public enum APIKEYTYPE {
         CHATGPTAPIKEY
@@ -51,7 +40,8 @@ public class ApiHandler {
         OAUTH_VALIDATE("oauth2/validate", 0),
         GET_USERS("helix/users", 0),
         GET_CHANNEL("helix/channels", 0),
-        CLIPS("helix/clips", 0);
+        CLIPS("helix/clips", 0),
+        GET_STREAMS("helix/streams", 0);
 
         private String path;
         private Integer ip;
@@ -63,9 +53,9 @@ public class ApiHandler {
 
     }
 
-    public ApiHandler(@Value("${mongodb.password}") String dbPassword) throws Exception {
-        this.dbPassword = dbPassword;
-        JSONObject credentials = getTwitchCredentialsFromMongoDB();
+    public ApiHandler(TwitchData twitchData) throws Exception {
+        this.twitchData = twitchData;
+        JSONObject credentials = twitchData.getTwitchCredentials();
         this.clientId = credentials.getString("client_id");
         this.clientSecret = credentials.getString("client_secret");
         this.authorization_domain = HTTPS + "id.twitch.tv";
@@ -89,7 +79,6 @@ public class ApiHandler {
     private String refreshToken;
     private String clientId;
     private String clientSecret;
-    private String dbPassword;
     private boolean isConnectionRunning = false;
     private BufferedWriter twitch_writer;
     private BufferedReader twitch_reader;
@@ -152,41 +141,8 @@ public class ApiHandler {
         return twitch_reader;
     }
 
-    private JSONObject getTwitchCredentialsFromMongoDB() throws Exception {
-        MongoCollection<Document> collection = getTwitchDBData();
-        JSONObject data = new JSONObject();
-        FindIterable<Document> iterDoc = collection.find();
-        Iterator<Document> it = iterDoc.iterator();
-        while (it.hasNext()) {
-          Document document = it.next();
-          JSONObject documentData = new JSONObject(document.toJson());
-          data.put("access_token", documentData.getString("access_token"));
-          data.put("refresh_token", documentData.getString("refresh_token"));
-          data.put("client_id", documentData.getString("client_id"));
-          data.put("client_secret", documentData.getString("client_secret"));
-          data.put("user_name", documentData.getString("user_name"));
-        }
-        return data;
-    }
-
-    public MongoCollection<Document> getTwitchDBData(){
-        String connectionData = "mongodb+srv://twitch:"
-                + dbPassword
-                + "@twitchprojectoauth.lfctwou.mongodb.net/?retryWrites=true&w=majority";
-        ConnectionString connectionString = new ConnectionString(connectionData);
-        MongoClientSettings settings = MongoClientSettings.builder()
-                .applyConnectionString(connectionString)
-                .build();
-        MongoClient mongoClient = MongoClients.create(settings);
-        MongoDatabase database = mongoClient.getDatabase("twitch");
-        return database.getCollection("credentials");
-    }
-
-
     private void sendAccessTokenAndRefreshTokenToMongoDB(String accessToken, String refreshToken) {
-        MongoCollection<Document> collection = getTwitchDBData();
-        collection.updateOne(eq("client_id", this.clientId), Updates.set("access_token", accessToken));
-        collection.updateOne(eq("client_id", this.clientId), Updates.set("refresh_token", refreshToken));
+        twitchData.setTwitchCredentials(new JSONObject().put("access_token", accessToken).put("refresh_token", refreshToken));
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
     }
@@ -317,8 +273,8 @@ public class ApiHandler {
     }
 
     public String POST() throws Exception {
-        checkRequestQuality();
         validateAndUpdateAccessToken();
+        checkRequestQuality();
         String result = "";
         HttpPost httpPost = new HttpPost(domain + SLASH + path);
 
@@ -356,10 +312,9 @@ public class ApiHandler {
     }
 
     public String GET() throws Exception {
-        checkRequestQuality();
         validateAndUpdateAccessToken();
+        checkRequestQuality();
         String result = "";
-        int status;
         HttpGet httpGet = new HttpGet(domain + SLASH + path);
 
         // Headers Part
@@ -385,7 +340,6 @@ public class ApiHandler {
         try (CloseableHttpClient httpClient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpClient.execute(httpGet)) {
 
-            status = response.getStatusLine().getStatusCode();
             result = EntityUtils.toString(response.getEntity());
         }
 
@@ -394,8 +348,8 @@ public class ApiHandler {
     }
 
     public String PUT() throws Exception {
-        checkRequestQuality();
         validateAndUpdateAccessToken();
+        checkRequestQuality();
         String result = "";
         HttpPut httpPut = new HttpPut(domain + SLASH + path);
 
@@ -433,8 +387,8 @@ public class ApiHandler {
     }
 
     public String DELETE() throws Exception {
-        checkRequestQuality();
         validateAndUpdateAccessToken();
+        checkRequestQuality();
         String result = "";
         HttpDelete httpDelete = new HttpDelete(domain + SLASH + path);
 
