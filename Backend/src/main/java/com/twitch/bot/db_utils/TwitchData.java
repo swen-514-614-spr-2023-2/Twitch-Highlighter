@@ -25,7 +25,6 @@ import com.mongodb.client.model.Updates;
 import com.twitch.bot.model.Channel;
 
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.gte;
 import static com.mongodb.client.model.Filters.lte;
 
 @Component
