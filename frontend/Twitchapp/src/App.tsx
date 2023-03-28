@@ -1,7 +1,18 @@
-import { Button, ButtonGroup } from "@chakra-ui/react";
+import { Button, ButtonGroup, Grid, GridItem } from "@chakra-ui/react";
+import ChannelGrid from "./components/ChannelGrid";
+import NavBar from "./components/NavBar";
 
 function App() {
-  return <Button colorScheme="blue">Button</Button>;
+  return (
+    <Grid templateAreas={`"nav" "main"`}>
+      <GridItem area="nav">
+        <NavBar></NavBar>
+      </GridItem>
+      <GridItem area="main">
+        <ChannelGrid />
+      </GridItem>
+    </Grid>
+  );
 }
 
 export default App;
