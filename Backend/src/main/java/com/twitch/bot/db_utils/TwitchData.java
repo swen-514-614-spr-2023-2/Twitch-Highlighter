@@ -224,4 +224,19 @@ public class TwitchData {
             collection.insertOne(document);
         }
     }
+
+    public JSONObject getCloudCredentials(){
+        MongoDatabase database = mongoClient.getDatabase("twitch");
+        MongoCollection<Document> collection = database.getCollection("Cloud");
+         FindIterable<Document> iterDoc = collection.find();
+        Iterator<Document> it = iterDoc.iterator();
+        JSONObject data = new JSONObject();
+        while (it.hasNext()) {
+            Document document = it.next();
+            JSONObject documentData = new JSONObject(document.toJson());
+            data.put("access_id", documentData.get("id").toString());
+            data.put("access_key", documentData.get("key").toString());
+        }
+        return data;
+    }
 }

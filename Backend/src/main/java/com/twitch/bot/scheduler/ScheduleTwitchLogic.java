@@ -15,6 +15,18 @@ import org.json.JSONObject;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.SystemPropertyCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.regions.providers.SystemSettingsRegionProvider;
+import software.amazon.awssdk.services.comprehend.ComprehendClient;
+import software.amazon.awssdk.services.comprehend.model.ComprehendException;
+import software.amazon.awssdk.services.comprehend.model.DetectSentimentRequest;
+import software.amazon.awssdk.services.comprehend.model.DetectSentimentResponse;
+
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.twitch.bot.api.ApiHandler;
 import com.twitch.bot.api.ApiHandler.PATH;
 import com.twitch.bot.db_utils.TwitchData;
@@ -64,7 +76,7 @@ public class ScheduleTwitchLogic {
         }
         JSONArray messages = twitchData.getTwitchMessageForChannel(channel, tillTimeStamp - frequencySeconds, tillTimeStamp);
         if(messages.length() >= thresholdValue){
-            String sentimental_result = awsSentimentalAnalysis(messages);
+            String sentimental_result = awsSentimentalAnalysis(messageMerge(messages));
             JSONObject clips = awsClipsGeneration(channel);
             twitchData.updateTwitchAnalysis(channel, sentimental_result, clips);
         }
@@ -98,8 +110,49 @@ public class ScheduleTwitchLogic {
         }
     }
 
-    public String awsSentimentalAnalysis(JSONArray messages){
-        return "positive";
+    public String awsSentimentalAnalysis(String messageText){
+       
+        Region region = Region.US_EAST_1;
+        
+        Boolean isRunningInAWS = System.getenv("AWS_ENVIRONMENT") != null ? Boolean.valueOf(System.getenv("AWS_ENVIRONMENT").toString()) : false;
+        
+        if(!isRunningInAWS){
+            JSONObject credentials = twitchData.getCloudCredentials();
+            System.setProperty("aws.accessKeyId",credentials.getString("access_id"));
+            System.setProperty("aws.secretAccessKey",credentials.getString("access_key"));
+        }else{
+            System.setProperty("aws.accessKeyId", System.getenv("access_id"));
+            System.setProperty("aws.secretAccessKey", System.getenv("access_key"));
+        }
+       
+
+        ComprehendClient comClient = ComprehendClient.builder()
+            .region(region).credentialsProvider(SystemPropertyCredentialsProvider.create())
+            .build();
+
+        try {
+            DetectSentimentRequest detectSentimentRequest = DetectSentimentRequest.builder()
+                .text(messageText)
+                .languageCode("en")
+                .build();
+
+            DetectSentimentResponse detectSentimentResult = comClient.detectSentiment(detectSentimentRequest);
+            return detectSentimentResult.sentimentAsString();
+
+        } catch (ComprehendException ex) {
+            LOG.log(Level.WARNING, "Exception is ::: ", ex);
+            return "Exception";
+        }
+    }
+
+    public String messageMerge(JSONArray messages){
+        String messagesStr = "";
+        Iterator<Object> messagesIter = messages.iterator();
+        while(messagesIter.hasNext()){
+            JSONObject messageObj = (JSONObject)messagesIter.next();
+            messagesStr += messageObj.get("message").toString();
+        }
+        return messagesStr;
     }
 
     public JSONObject awsClipsGeneration(Channel channel) throws Exception{
