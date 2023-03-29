@@ -6,6 +6,7 @@ phases:
       java: corretto11
   build:
     commands:
+      - cd Backend/
       - mvn clean install
   post_build:
     commands:
