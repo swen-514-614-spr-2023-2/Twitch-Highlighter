@@ -1,4 +1,4 @@
-import { list, SimpleGrid } from "@chakra-ui/react";
+import { Center, list, SimpleGrid } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import apiClient from "../services/api-client";
 import ChannelCard from "./ChannelCard";
@@ -15,17 +15,20 @@ const ChannelGrid = () => {
 
   useEffect(() => {
     apiClient
-      .get<Channel[]>("/getchannel")
+      .get<Channel[]>("/getchannels")
       .then((res) => setchannel(res.data))
       .catch((err) => setError(err.message));
   }, []);
 
   return (
-    <SimpleGrid columns={3} spacing={10} padding="10px">
-      {channels.map((channel) => (
+    <Center>
+      <SimpleGrid columns={3} spacing={10} padding="10px">
+        {/* {channels.map((channel) => (
         <ChannelCard key={channel.id} channel={channel} />
-      ))}
-    </SimpleGrid>
+      ))} */}
+        <ChannelCard key="1" />
+      </SimpleGrid>
+    </Center>
   );
 };
 
