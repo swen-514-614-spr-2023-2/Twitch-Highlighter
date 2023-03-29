@@ -336,7 +336,6 @@ public class TwitchData {
         while (it.hasNext()) {
             Document document = it.next();
             JSONObject data = new JSONObject(document.toJson());
-            JSON.parse(data.get("sentimental_clips_collection").toString());
             return new JSONArray(data.get("sentimental_clips_collection").toString());
         }
         return new JSONArray();

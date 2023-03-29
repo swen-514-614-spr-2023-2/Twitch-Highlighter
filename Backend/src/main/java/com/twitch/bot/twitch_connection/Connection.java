@@ -3,8 +3,10 @@ package com.twitch.bot.twitch_connection;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -199,5 +201,21 @@ public class Connection {
 
     public JSONArray getTwitchAnalysisOfAChannel(String channelName){
         return twitchData.getTwitchAnalysisOfAChannel(ChannelsData.getChannel(channelName));
+    }
+
+    public List<HashMap<String, Object>> getAllChannels(){
+        HashMap<String, Channel> channels = ChannelsData.getChannels();
+        Iterator<String> channelsIter = channels.keySet().iterator();
+        List<HashMap<String, Object>> result = new ArrayList<>();
+        while(channelsIter.hasNext()){
+            String channelName = channelsIter.next();
+            Channel channel = channels.get(channelName);
+            HashMap<String, Object> channelDtls = new HashMap<>();
+            channelDtls.put("id", channel.getId());
+            channelDtls.put("channel_name", channel.getChannelName());
+            channelDtls.put("twitch_id", channel.getTwitchId());
+            result.add(channelDtls);
+        }
+        return result;
     }
 }

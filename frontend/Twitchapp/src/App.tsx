@@ -15,7 +15,7 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<ChannelGrid />} />
-            <Route path="/clips" element={<Clips />} />
+            <Route path="/:channel_name/clips" element={<Clips />} />
           </Routes>
         </Router>
       </GridItem>

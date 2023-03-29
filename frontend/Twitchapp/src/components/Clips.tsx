@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import apiClient from "../services/api-client";
+import { getTwitchAnalysisOfChannel } from "../services/api-client";
 import {
   Card,
   CardHeader,
@@ -13,6 +13,7 @@ import {
   AspectRatio,
 } from "@chakra-ui/react";
 import { AiFillPlaySquare } from "react-icons/ai";
+import {useParams} from "react-router-dom";
 
 interface Clip {
   embed_url: string;
@@ -33,13 +34,16 @@ const Clips = () => {
   const [error, setError] = useState("");
   const [isEmpty, setEmpty] = useState(true);
   const [showVideo, setVideo] = useState(false);
+  const {channel_name} = useParams();
 
   useEffect(() => {
-    apiClient
-      .get<Clips>("/twitch_analysis")
+    debugger;
+    getTwitchAnalysisOfChannel(channel_name)
       .then((res) => {
-        setClips(res.data.twitch_analysis);
-        setEmpty(false);
+        setClips(res.twitch_analysis);
+        if(res.twitch_analysis != undefined && res.twitch_analysis.length != 0){
+          setEmpty(false);
+        }   
       })
       .catch((err) => setError(err.message));
   }, []);
@@ -73,7 +77,7 @@ const Clips = () => {
                 </HStack>
                 {showVideo && (
                   <AspectRatio>
-                    <iframe src={clip.clip_details.embed_url}></iframe>
+                    <iframe src={clip.clip_details.embed_url + "&parent=localhost"}></iframe>
                   </AspectRatio>
                 )}
               </Box>

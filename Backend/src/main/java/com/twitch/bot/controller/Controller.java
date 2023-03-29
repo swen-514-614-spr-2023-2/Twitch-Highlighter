@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.twitch.bot.twitch_connection.ChannelsData;
 import com.twitch.bot.twitch_connection.Connection;
 
+@CrossOrigin(origins = "http://localhost:5173/")
 @RestController
 public class Controller {
     private static final Logger LOG = Logger.getLogger(Controller.class.getName());
@@ -24,6 +26,10 @@ public class Controller {
         this.twitch_connection = twitch_connection;
     }
 
+    @GetMapping("/channels")
+    public ResponseEntity<Object> getTwitchChannels() throws Exception {
+        return new ResponseEntity<>(twitch_connection.getAllChannels(), HttpStatus.OK);
+    }
 
     @GetMapping("/twitch_analysis")
     public ResponseEntity<Object> getTwitchAnalysisData(@RequestParam("channel_name") String channelName) throws Exception {

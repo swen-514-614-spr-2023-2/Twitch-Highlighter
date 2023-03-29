@@ -8,16 +8,16 @@ interface Props {
   channel: Channel;
 }
 // { channel }: Props (goes inside())
-const ChannelCard = () => {
+const ChannelCard = (channelData: any) => {
   return (
     <Center>
-      <Link as={RouteLink} to="/clips">
+      <Link as={RouteLink} to={channelData.channel.channel_name + '/clips'}>
         <Card borderRadius={10} overflow="hidden" maxW="sm">
           {/* <Image src={channel.imageUrl} /> */}
           <Image src={channelImage} />
           <CardBody>
-            {/* <Heading fontSize="2xl">{channel.name}</Heading> */}
-            <Heading fontSize="2xl">Tubbo</Heading>
+            <Heading fontSize="2xl">{channelData.channel.channel_name}</Heading>
+            {/* <Heading fontSize="2xl">Tubbo</Heading> */}
           </CardBody>
         </Card>
       </Link>
