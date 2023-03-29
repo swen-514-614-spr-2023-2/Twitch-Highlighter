@@ -8,36 +8,81 @@ import {
   Box,
   Heading,
   StackDivider,
+  Button,
+  HStack,
+  AspectRatio,
 } from "@chakra-ui/react";
+import { AiFillPlaySquare } from "react-icons/ai";
 
-const [clips, setClips] = useState([]);
-const [error, setError] = useState("");
+interface Clip {
+  embed_url: string;
+}
 
-useEffect(() => {
-  apiClient
-    .get("/getclips")
-    .then((res) => setClips(res.data))
-    .catch((err) => setError(err.message));
-}, []);
+interface Analysis {
+  clip_details: Clip;
+  sentimental_analysis: string;
+}
+
+interface Clips {
+  channel_name: string;
+  twitch_analysis: Analysis[];
+}
 
 const Clips = () => {
-  return (
-    <Card>
-      <CardHeader>
-        <Heading size="md">Generated Clips</Heading>
-      </CardHeader>
-      <CardBody>
-        <Stack divider={<StackDivider />} spacing="4">
-          {clips.map((clip, index) => (
-            <Box>
-              <h4>clip {index + 1}</h4>
-              <button></button>
-            </Box>
-          ))}
-        </Stack>
-      </CardBody>
-    </Card>
-  );
+  const [clips, setClips] = useState<Analysis[]>([]);
+  const [error, setError] = useState("");
+  const [isEmpty, setEmpty] = useState(true);
+  const [showVideo, setVideo] = useState(false);
+
+  useEffect(() => {
+    apiClient
+      .get<Clips>("/twitch_analysis")
+      .then((res) => {
+        setClips(res.data.twitch_analysis);
+        setEmpty(false);
+      })
+      .catch((err) => setError(err.message));
+  }, []);
+
+  if (!isEmpty)
+    return (
+      <Card>
+        <CardHeader>
+          <Heading size="md">Generated Clips</Heading>
+        </CardHeader>
+        <CardBody>
+          <Stack divider={<StackDivider />} spacing="4">
+            {clips.map((clip, index) => (
+              <Box
+                key={index}
+                border="1px"
+                borderColor="whiteAlpha.500"
+                borderRadius={3}
+                justifyContent="space-between"
+                p="4"
+              >
+                <HStack justifyContent={"space-between"}>
+                  <h4>clip {index + 1}</h4>
+                  <Button
+                    variant="link"
+                    float={"right"}
+                    onClick={() => setVideo(!showVideo)}
+                  >
+                    <AiFillPlaySquare size={40} />
+                  </Button>
+                </HStack>
+                {showVideo && (
+                  <AspectRatio>
+                    <iframe src={clip.clip_details.embed_url}></iframe>
+                  </AspectRatio>
+                )}
+              </Box>
+            ))}
+          </Stack>
+        </CardBody>
+      </Card>
+    );
+  return <Heading size={"2xl"}>No clips generated</Heading>;
 };
 
 export default Clips;

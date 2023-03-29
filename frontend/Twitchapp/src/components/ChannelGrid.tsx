@@ -13,12 +13,12 @@ const ChannelGrid = () => {
   const [channels, setchannel] = useState<Channel[]>([]);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    apiClient
-      .get<Channel[]>("/getchannels")
-      .then((res) => setchannel(res.data))
-      .catch((err) => setError(err.message));
-  }, []);
+  //   useEffect(() => {
+  //     apiClient
+  //       .get<Channel[]>("/getchannels")
+  //       .then((res) => setchannel(res.data))
+  //       .catch((err) => setError(err.message));
+  //   }, []);
 
   return (
     <Center>
