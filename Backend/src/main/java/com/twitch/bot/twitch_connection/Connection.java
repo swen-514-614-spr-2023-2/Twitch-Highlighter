@@ -3,9 +3,12 @@ package com.twitch.bot.twitch_connection;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
@@ -32,9 +35,16 @@ public class Connection {
         return twitch_writer;
     }
 
-    public Connection(ApiHandler apiHandler, TwitchData twitchData) {
+    public Connection(ApiHandler apiHandler, TwitchData twitchData) throws Exception {
         this.apiHandler = apiHandler;
         this.twitchData = twitchData;
+        this.connect();
+        HashMap<String, Channel> channels = ChannelsData.getChannels();
+        Iterator<String> channelsIter = channels.keySet().iterator();
+        while(channelsIter.hasNext()){
+            Channel channel = channels.get(channelsIter.next());
+            this.joinChannel(channel.getChannelName());
+        }
     }
 
     public void sendCommandMessage(Object message) {
@@ -55,6 +65,21 @@ public class Connection {
             e.printStackTrace();
         }
         LOG.log(Level.INFO, message.toString());
+    }
+
+    public void addAndJoinChannel(String channelName) throws Exception{
+        String broadcaster_id = getUserBroadcasterId(channelName);
+        new ChannelsData(twitchData).addChannel(channelName, broadcaster_id);
+        joinChannel(channelName);
+    }
+
+    
+    public void removeAndDeleteChannelData(String channelName) throws Exception{
+        Channel channel = ChannelsData.getChannel(channelName);
+        if(channel != null){
+            removeChannel(channel.getChannelName());
+            new ChannelsData(twitchData).removeChannel(channel);
+        }
     }
 
     public void joinChannel(String channelName){
@@ -127,7 +152,7 @@ public class Connection {
         str = currentLine.split("!");
         String msg_user = str[0].substring(1, str[0].length());
         str = currentLine.split(" ");
-        Channel msg_channel = ChannelsData.getChannel(str[2].startsWith("#") ? str[2].substring(1) : str[2], this);
+        Channel msg_channel = ChannelsData.getChannel(str[2].startsWith("#") ? str[2].substring(1) : str[2]);
         String msg_msg = currentLine.substring((str[0].length() + str[1].length() + str[2].length() + 4), currentLine.length());
         LOG.log(Level.INFO, "Channel Details : " + msg_channel + " ||| User : " + msg_user + " ||| Messsage : " + msg_msg);
         if (msg_msg.startsWith("!")){
@@ -154,12 +179,12 @@ public class Connection {
 	
 	// }
 
-    public void getUsers() throws Exception{
-        String response = apiHandler.setPath(PATH.GET_USERS).setParams(new JSONObject().put("login", "tubbo")).setHeaders(new JSONObject().put("set_client_id", "Client-Id")).GET();
+    public String getUserBroadcasterId(String name) throws Exception{
+        String response = apiHandler.setPath(PATH.GET_USERS).setParams(new JSONObject().put("login", name)).setHeaders(new JSONObject().put("set_client_id", "Client-Id")).GET();
         JSONObject responseData = new JSONObject(response);
         String broadcaster_id = responseData.getJSONArray("data").getJSONObject(0).getString("id");
         LOG.log(Level.INFO, "broadcaster_id :::: " + broadcaster_id);
-        makeClips(broadcaster_id);
+        return broadcaster_id;
     }
 
     public void makeClips(String broadcaster_id) throws Exception{
@@ -170,5 +195,9 @@ public class Connection {
         Thread.sleep(500);//*Thread Sleeps so that the create clip is done generating on twitch side */
         response = apiHandler.setPath(PATH.CLIPS).setParams(new JSONObject().put("id", "GoodObedientGazelleBigBrother-4fwYP4VvZEr4BcNg")).setHeaders(new JSONObject().put("set_client_id", "Client-Id")).GET();
         LOG.log(Level.INFO, "response :::: " + response);
+    }
+
+    public JSONArray getTwitchAnalysisOfAChannel(String channelName){
+        return twitchData.getTwitchAnalysisOfAChannel(ChannelsData.getChannel(channelName));
     }
 }

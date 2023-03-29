@@ -40,7 +40,7 @@ public class Channel {
 
     public void setIsListeningToChannel(Boolean isListeningToChannel){
         this.isListeningToChannel = isListeningToChannel;
-        new TwitchData(null, false).updateChannelServerListeningData(isListeningToChannel, channel_name);
+        new TwitchData(null, false, null).updateChannelServerListeningData(isListeningToChannel, channel_name);
     }
 
     @Override

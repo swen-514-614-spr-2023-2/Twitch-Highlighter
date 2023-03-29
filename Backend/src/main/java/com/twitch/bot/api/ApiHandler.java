@@ -142,7 +142,7 @@ public class ApiHandler {
     }
 
     private void sendAccessTokenAndRefreshTokenToMongoDB(String accessToken, String refreshToken) {
-        twitchData.setTwitchCredentials(new JSONObject().put("access_token", accessToken).put("refresh_token", refreshToken));
+        twitchData.setTwitchCredentials(new JSONObject().put("access_token", accessToken).put("refresh_token", refreshToken).put("client_id", clientId));
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
     }

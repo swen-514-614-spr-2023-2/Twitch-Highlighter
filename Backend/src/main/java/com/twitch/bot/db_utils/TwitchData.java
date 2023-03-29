@@ -1,6 +1,7 @@
 package com.twitch.bot.db_utils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -13,6 +14,18 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+import com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
+import com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
+import com.amazonaws.services.dynamodbv2.model.KeyType;
+import com.amazonaws.services.dynamodbv2.model.ListTablesRequest;
+import com.amazonaws.services.dynamodbv2.model.ListTablesResult;
+import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
+import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
 import com.mongodb.BasicDBObject;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
@@ -22,6 +35,7 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Updates;
+import com.mongodb.util.JSON;
 import com.twitch.bot.model.Channel;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -31,17 +45,27 @@ import static com.mongodb.client.model.Filters.lte;
 public class TwitchData {
     private static final Logger LOG = Logger.getLogger(TwitchData.class.getName());
     MongoClient mongoClient;
+    AmazonDynamoDB dynamoDb;
     private static String dbPassword;
 
-    public TwitchData(@Value("${mongodb.password}") String dbPassword, @Value("true") Boolean isCalledOnInitalize) {
-        if (isCalledOnInitalize) {
-            setDbPassword(dbPassword);
+    public TwitchData(@Value("${mongodb.password}") String dbPassword, @Value("true") Boolean isCalledOnInitalize, @Value("${dynamodb.names}") String dynamoDbNames) {
+        if(isAwsEnvironment()){
+            AmazonDynamoDB ddb = AmazonDynamoDBClientBuilder.defaultClient();
+        }else{
+            if (isCalledOnInitalize) {
+                setDbPassword(dbPassword);
+            }
+            makeConnectionToDB();
         }
-        makeConnectionToDB();
     }
 
     public static void setDbPassword(String dbPassword) {
         TwitchData.dbPassword = dbPassword;
+    }
+
+    public static Boolean isAwsEnvironment(){
+        return false;
+        //return System.getenv("AWS_ENVIRONMENT") != null ? Boolean.valueOf(System.getenv("AWS_ENVIRONMENT").toString()) : false;
     }
 
     public void makeConnectionToDB() {
@@ -55,6 +79,63 @@ public class TwitchData {
         mongoClient = MongoClients.create(settings);
         Logger mongoLogger = Logger.getLogger("org.mongodb.driver");
         mongoLogger.setLevel(Level.OFF);
+    }
+
+    public void makeConnectionToDynamoDB(List<String> dynamoDbNames) {
+        dynamoDb = AmazonDynamoDBClientBuilder.defaultClient();
+        ListTablesRequest request;
+
+        boolean more_tables = true;
+        String last_name = null;
+
+        while(more_tables) {
+            try {
+                if (last_name == null) {
+                	request = new ListTablesRequest().withLimit(10);
+                }
+                else {
+                	request = new ListTablesRequest()
+                			.withLimit(10)
+                			.withExclusiveStartTableName(last_name);
+                }
+
+                ListTablesResult table_list = dynamoDb.listTables(request);
+                List<String> table_names = table_list.getTableNames();
+
+                if (table_names.size() > 0) {
+                    for (String cur_name : table_names) {
+                        if(dynamoDbNames.contains(cur_name)){
+                            dynamoDbNames.remove(cur_name);
+                        }
+                    }
+                } else {
+                    System.out.println("No tables found!");
+                    System.exit(0);
+                }
+
+                last_name = table_list.getLastEvaluatedTableName();
+                if (last_name == null) {
+                    more_tables = false;
+                }
+
+            } catch (AmazonServiceException ex) {
+                LOG.log(Level.SEVERE, "Exception in fetching tables ::: ", ex.getMessage());
+            }
+        }
+        if(!dynamoDbNames.isEmpty()){
+            LOG.log(Level.SEVERE, "Tables Not Found ::: ", dynamoDbNames.toString());
+            for (String tableName : dynamoDbNames) {
+                createTableInDyanmoDB(tableName);
+            }
+        }
+    }
+
+    public void createTableInDyanmoDB(String tableName) {
+        CreateTableRequest request = new CreateTableRequest().withTableName(tableName).withKeySchema(new KeySchemaElement().withAttributeName("id").withKeyType(KeyType.HASH))
+                .withProvisionedThroughput(new ProvisionedThroughput().withReadCapacityUnits(5L)
+                    .withWriteCapacityUnits(5L)).withAttributeDefinitions(new AttributeDefinition("id", ScalarAttributeType.N));
+
+        dynamoDb.createTable(request);
     }
 
     public JSONObject getTwitchCredentials() {
@@ -97,13 +178,25 @@ public class TwitchData {
         if (null == timeStamp) {
             timeStamp = System.currentTimeMillis();
         }
-        MongoDatabase database = mongoClient.getDatabase("twitch");
-        MongoCollection<Document> collection = database.getCollection("messages");
-        Document document = new Document("channel_name", channel.getChannelName())
-                .append("user_name", user.toString())
-                .append("message", message)
-                .append("time_stamp", timeStamp);
-        collection.insertOne(document);
+        if(isAwsEnvironment()){
+            HashMap<String,AttributeValue> item_values = new HashMap<String,AttributeValue>();
+            item_values.put("channel_name", new AttributeValue(channel.getChannelName()));
+            item_values.put("user_name", new AttributeValue(user.toString()));
+            item_values.put("message", new AttributeValue(message));
+            AttributeValue attrVal =  new AttributeValue();
+            attrVal.setN(timeStamp.toString());
+            item_values.put("time_stamp", attrVal);
+            dynamoDb.putItem("messages", item_values);
+
+        }else{
+            MongoDatabase database = mongoClient.getDatabase("twitch");
+            MongoCollection<Document> collection = database.getCollection("messages");
+            Document document = new Document("channel_name", channel.getChannelName())
+                    .append("user_name", user.toString())
+                    .append("message", message)
+                    .append("time_stamp", timeStamp);
+            collection.insertOne(document);
+        }  
     }
 
     public JSONArray getTwitchMessageForChannel(Channel channel) {
@@ -189,11 +282,64 @@ public class TwitchData {
         return data;
     }
 
+    public Long getNextChannelId(){
+        List<Channel> channels = getChannelDetails();
+        Iterator<Channel> channelsIter = channels.iterator();
+        Long id = 0l;
+        while(channelsIter.hasNext()){
+            Channel channel = channelsIter.next();
+            if(id < Long.valueOf(channel.getId())){
+                id = Long.valueOf(channel.getId());
+            }
+        }
+        return id + 1;
+    }
+
+    public Channel addChannelDetails(String channelName, String channelId){
+        if(channelName == null || channelId == null || channelName.trim() == "" || channelId.trim() == ""){
+            return null;
+        }
+        MongoDatabase database = mongoClient.getDatabase("twitch");
+        MongoCollection<Document> collection = database.getCollection("channels");
+        Long id = getNextChannelId();
+        Document document = new Document("id", id)
+        .append("name", channelName)
+        .append("twitch_id", channelId)
+        .append("is_server_listening", false);
+        collection.insertOne(document);
+
+        Channel updatedChannel = new Channel(Integer.parseInt(id.toString()), channelName, channelId);
+        return updatedChannel;
+    }
+
+    public void deleteChannelDetails(Integer id){
+        MongoDatabase database = mongoClient.getDatabase("twitch");
+        MongoCollection<Document> collection = database.getCollection("channels");
+        Bson filter = eq("id", id);
+        collection.deleteMany(filter);
+    }
+
     public void updateChannelServerListeningData(Boolean isServerListening, String channelName) {
         MongoDatabase database = mongoClient.getDatabase("twitch");
         MongoCollection<Document> collection = database.getCollection("channels");
         collection.updateOne(eq("name", channelName),
                 Updates.set("is_server_listening", isServerListening));
+    }
+
+    public JSONArray getTwitchAnalysisOfAChannel(Channel channel){
+        MongoDatabase database = mongoClient.getDatabase("twitch");
+        MongoCollection<Document> collection = database.getCollection("twitch_analysis");
+        BasicDBObject criteriaQuery = new BasicDBObject();
+        criteriaQuery.append("twitch_channel_id", channel.getTwitchId());
+        FindIterable<Document> iterDoc = collection.find(criteriaQuery);
+        Iterator<Document> it = iterDoc.iterator();
+        while (it.hasNext()) {
+            Document document = it.next();
+            JSONObject data = new JSONObject(document.toJson());
+            JSON.parse(data.get("sentimental_clips_collection").toString());
+            return new JSONArray(data.get("sentimental_clips_collection").toString());
+        }
+        return new JSONArray();
     }
 
     public void updateTwitchAnalysis(Channel channel, String sentimental_result, JSONObject clip_details) {
@@ -211,16 +357,17 @@ public class TwitchData {
                 aws_analysis.put(new JSONObject().put("sentimental_analysis", sentimental_result).put("clip_details",
                         clip_details));
                 documentData.put("sentimental_clips_collection", aws_analysis);
-                collection.updateOne(eq("twitch_channel_id", Long.valueOf(channel.getTwitchId())),
+                collection.updateOne(eq("twitch_channel_id", channel.getTwitchId()),
                         Updates.set("sentimental_clips_collection", documentData));
             }
         }
         if (!isExistingDataPresent) {
-            Document document = new Document("twitch_channel_id", Long.valueOf(channel.getTwitchId()))
-                    .append("sentimental_clips_collection ", new JSONArray().put(
+            Document document = new Document("twitch_channel_id", channel.getTwitchId())
+                    .append("sentimental_clips_collection", new JSONArray().put(
                             new JSONObject()
                                     .put("sentimental_analysis", sentimental_result)
-                                    .put("clip_details", clip_details)));
+                                    .put("clip_details", clip_details)).toString()
+                                    );
             collection.insertOne(document);
         }
     }

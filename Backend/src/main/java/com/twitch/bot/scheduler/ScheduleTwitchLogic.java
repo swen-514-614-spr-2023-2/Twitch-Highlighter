@@ -15,18 +15,13 @@ import org.json.JSONObject;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.SystemPropertyCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.regions.providers.SystemSettingsRegionProvider;
 import software.amazon.awssdk.services.comprehend.ComprehendClient;
 import software.amazon.awssdk.services.comprehend.model.ComprehendException;
 import software.amazon.awssdk.services.comprehend.model.DetectSentimentRequest;
 import software.amazon.awssdk.services.comprehend.model.DetectSentimentResponse;
 
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.twitch.bot.api.ApiHandler;
 import com.twitch.bot.api.ApiHandler.PATH;
 import com.twitch.bot.db_utils.TwitchData;
@@ -34,14 +29,13 @@ import com.twitch.bot.model.Channel;
 import com.twitch.bot.twitch_connection.ChannelsData;
 
 @Component
-// @EnableAsync
 public class ScheduleTwitchLogic {
     private static final Logger LOG = Logger.getLogger(ScheduleTwitchLogic.class.getName());
     private static final long frequencySeconds = 15000l;
     private TwitchData twitchData;
     private ApiHandler apiHandler;
-    private Integer avg_user_comment = 5;
-    // @Async
+    private Double avg_user_comment = 0.01;
+
     @Scheduled(fixedRate = 15000)
     public void jobRunner() throws Exception {
         Long currentTime = System.currentTimeMillis();
@@ -70,7 +64,7 @@ public class ScheduleTwitchLogic {
     public void processChannelMessages(Channel channel, Long tillTimeStamp) throws Exception{
         Long thresholdValue = getThresholdValueBasedOnChannel(channel);
         if(thresholdValue == -1){
-            channel.setIsListeningToChannel(false);
+            //channel.setIsListeningToChannel(false);
             twitchData.deleteTwitchMessageForChannel(channel, tillTimeStamp);
             return ;
         }
@@ -93,7 +87,7 @@ public class ScheduleTwitchLogic {
             return -1l;
         }
         Long viewer_count = Long.valueOf(responseData.getJSONArray("data").getJSONObject(0).get("viewer_count").toString());
-        Long avg_comment_multiplied_viewer_60sec = viewer_count * avg_user_comment;
+        Long avg_comment_multiplied_viewer_60sec = Math.round(viewer_count * avg_user_comment);
         Long avg_comment_multiplied_viewer_1sec = avg_comment_multiplied_viewer_60sec / 60;
         Long avg_comment_multiplied_viewer_frequencySeconds = (frequencySeconds / 1000) * avg_comment_multiplied_viewer_1sec;
         return avg_comment_multiplied_viewer_frequencySeconds;
@@ -103,7 +97,7 @@ public class ScheduleTwitchLogic {
         try (InputStream input = new FileInputStream("src/main/resources/application.properties")) {
             Properties prop = new Properties();
             prop.load(input);
-            return new TwitchData(prop.getProperty("mongodb.password"), false);
+            return new TwitchData(prop.getProperty("mongodb.password"), false, null);
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, "Exception in loading properties file ::: ", ex);
             throw ex;
@@ -114,9 +108,7 @@ public class ScheduleTwitchLogic {
        
         Region region = Region.US_EAST_1;
         
-        Boolean isRunningInAWS = System.getenv("AWS_ENVIRONMENT") != null ? Boolean.valueOf(System.getenv("AWS_ENVIRONMENT").toString()) : false;
-        
-        if(!isRunningInAWS){
+        if(!TwitchData.isAwsEnvironment()){
             JSONObject credentials = twitchData.getCloudCredentials();
             System.setProperty("aws.accessKeyId",credentials.getString("access_id"));
             System.setProperty("aws.secretAccessKey",credentials.getString("access_key"));
