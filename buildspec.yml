@@ -15,4 +15,5 @@ artifacts:
     - target/*.jar
     - scripts/*.sh
     - appspec.yml
+  base-directory: 'Backend'
   discard-paths: yes
