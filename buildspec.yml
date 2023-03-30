@@ -13,6 +13,6 @@ phases:
       - echo Build completed
 artifacts:
   files:
-    - target/*.jar
-    - scripts/*.sh
+    - Backend/target/*.jar
+    - Backend/scripts/*.sh
     - appspec.yml
