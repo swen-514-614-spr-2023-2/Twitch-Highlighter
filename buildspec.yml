@@ -14,10 +14,11 @@ phases:
       - echo build
   post_build:
     commands:
+      - mkdir target
+      - cp -a Backend/target/*.jar target/
       - echo Build completed
 artifacts:
   files:
-    - mkdir target
-    - cp -a Backend/target/*.jar target/
+    - target/*.jar
     - scripts/*.sh
     - appspec.yml
