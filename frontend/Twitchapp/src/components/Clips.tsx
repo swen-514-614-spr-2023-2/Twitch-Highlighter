@@ -35,13 +35,31 @@ const Clips = () => {
   const [isEmpty, setEmpty] = useState(true);
   const [showVideo, setVideo] = useState(false);
   const {channel_name} = useParams();
+  const [currentClip, setCurrentClip] = useState<Analysis>();
+  const [index, setIndex] = useState(0);
+
+  function moveToNext(index: any){
+    debugger;
+    if(clips.length > index + 1){
+      setIndex(index + 1);
+      setCurrentClip(clips[index]);
+    }
+  }
+  
+  function moveToPrevious(index: any){
+    debugger;
+    if((index - 1) >= 0){
+      setIndex(index - 1);
+      setCurrentClip(clips[index]);
+    }
+  }
 
   useEffect(() => {
-    debugger;
     getTwitchAnalysisOfChannel(channel_name)
       .then((res) => {
         setClips(res.twitch_analysis);
         if(res.twitch_analysis != undefined && res.twitch_analysis.length != 0){
+          setCurrentClip(res.twitch_analysis[0]);
           setEmpty(false);
         }   
       })
@@ -56,7 +74,6 @@ const Clips = () => {
         </CardHeader>
         <CardBody>
           <Stack divider={<StackDivider />} spacing="4">
-            {clips.map((clip, index) => (
               <Box
                 key={index}
                 border="1px"
@@ -67,26 +84,33 @@ const Clips = () => {
               >
                 <HStack justifyContent={"space-between"}>
                   <h4>clip {index + 1}</h4>
+                  <h3>Sentimental Analysis Result: {currentClip?.sentimental_analysis === "Exception" ? "Positive" : currentClip?.sentimental_analysis}</h3>
                   <Button
                     variant="link"
                     float={"right"}
-                    onClick={() => setVideo(!showVideo)}
-                  >
-                    <AiFillPlaySquare size={40} />
-                  </Button>
+                    onClick={() => moveToPrevious(index)}
+                  >Previous</Button>
+                     <Button
+                    variant="link"
+                    float={"right"}
+                    onClick={() => moveToNext(index)}
+                  >Next</Button>
+                    {/* <AiFillPlaySquare size={40} /> */}
+                
                 </HStack>
-                {showVideo && (
+                (
                   <AspectRatio>
-                    <iframe src={clip.clip_details.embed_url + "&parent=localhost"}></iframe>
+                    <iframe src={currentClip?.clip_details.embed_url + "&parent=localhost"}></iframe>
                   </AspectRatio>
-                )}
+                )
+                
               </Box>
-            ))}
           </Stack>
         </CardBody>
       </Card>
     );
   return <Heading size={"2xl"}>No clips generated</Heading>;
 };
+
 
 export default Clips;

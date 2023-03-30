@@ -1,11 +1,11 @@
 import axios from "axios";
 
-const IS_AWS_BUILD = process.env.IS_AWS_BUILD;
+// const IS_AWS_BUILD = process.env.IS_AWS_BUILD;
 
 const domain = "http://localhost:8080";
-if(!IS_AWS_BUILD){
+// if(!IS_AWS_BUILD){
   
-}
+// }
 
 export const getChannels = async () => {
   const response = await axios.get(domain + "/channels",{
@@ -20,6 +20,5 @@ export const getTwitchAnalysisOfChannel = async (channel_name: any) => {
       "channel_name": channel_name
     }
    })
-   debugger;
    return response.data;
 }

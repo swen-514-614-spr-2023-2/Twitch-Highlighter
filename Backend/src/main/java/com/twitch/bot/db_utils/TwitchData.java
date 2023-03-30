@@ -333,12 +333,13 @@ public class TwitchData {
         criteriaQuery.append("twitch_channel_id", channel.getTwitchId());
         FindIterable<Document> iterDoc = collection.find(criteriaQuery);
         Iterator<Document> it = iterDoc.iterator();
+        JSONArray arrayData = new JSONArray();
         while (it.hasNext()) {
             Document document = it.next();
             JSONObject data = new JSONObject(document.toJson());
-            return new JSONArray(data.get("sentimental_clips_collection").toString());
+            arrayData.putAll(new JSONArray(data.get("sentimental_clips_collection").toString()));
         }
-        return new JSONArray();
+        return arrayData;
     }
 
     public void updateTwitchAnalysis(Channel channel, String sentimental_result, JSONObject clip_details) {
