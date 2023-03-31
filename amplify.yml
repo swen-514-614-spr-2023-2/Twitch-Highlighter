@@ -17,7 +17,7 @@ applications:
             - echo "$PWD"
             - ls
       artifacts:
-        baseDirectory: dist/build
+        baseDirectory: dist
         files:
           - '**/*'
       cache:
