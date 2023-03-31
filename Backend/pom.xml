@@ -119,7 +119,6 @@
 		</dependency>
 
 	</dependencies>
-	<logger name="org.mongodb.driver.cluster" level="OFF" />
 
 	<build>
 		<plugins>
