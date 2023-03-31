@@ -15,7 +15,7 @@ phases:
   post_build:
     commands:
       - echo "$PWD"
-      - mkdir target
+      - cd ../
       - cp -a Backend/target/*.jar target/
       - echo Build completed
 artifacts:
