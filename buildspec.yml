@@ -20,6 +20,7 @@ phases:
       - cp -a Backend/target/*.jar app.jar
       - cp -a Backend/src/main/resources/.ebextensions/logs.config logs.config
       - cp -a Backend/src/main/resources/.ebextensions/tail-logs.config tail-logs.config
+      - cp -a Backend/src/main/resources/.ebextensions/https-instance-securitygroup.config https-instance-securitygroup.config
       - echo Build completed
 artifacts:
   files:
@@ -28,3 +29,4 @@ artifacts:
     - appspec.yml
     - logs.config
     - tail-logs.config
+    - https-instance-securitygroup.config
