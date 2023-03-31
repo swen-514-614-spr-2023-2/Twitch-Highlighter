@@ -106,9 +106,10 @@ public class Connection {
         }
         this.twitch_writer = apiHandler.getTwitch_writer();
         this.twitch_reader = apiHandler.getTwitch_reader();
-        if(isFirstTimeConnect){
-            cleanUp();
-        }
+        LOG.log(Level.INFO, "Log Check");
+        // if(isFirstTimeConnect){
+        //     cleanUp();
+        // }
         startReadingMessages();
         return isConnectionRunning;
     }
