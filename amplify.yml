@@ -13,11 +13,11 @@ applications:
             - npm run build
             - echo "$PWD"
             - ls
-            - cd ../
+            - cd dist
             - echo "$PWD"
             - ls
       artifacts:
-        baseDirectory: ./Twitchapp/build
+        baseDirectory: dist/build
         files:
           - '**/*'
       cache:
