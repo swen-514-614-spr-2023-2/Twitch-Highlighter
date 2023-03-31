@@ -10,12 +10,6 @@ applications:
           commands:
             - echo "$PWD"
             - IS_AWS_BUILD=${IS_AWS_BUILD}
-            - npm run build
-            - echo "$PWD"
-            - ls
-            - cd dist
-            - echo "$PWD"
-            - ls
       artifacts:
         baseDirectory: dist
         files:
