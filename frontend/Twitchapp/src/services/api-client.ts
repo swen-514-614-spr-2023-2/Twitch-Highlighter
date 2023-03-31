@@ -4,7 +4,7 @@ const IS_AWS_BUILD = process.env.IS_AWS_BUILD;
 
 let domain = "http://localhost:8080";
 if(!IS_AWS_BUILD){
-  domain = "http://andrewstwitch.us-east-1.elasticbeanstalk.com"; 
+  domain = "https://95t20e0kf9.execute-api.us-east-1.amazonaws.com/dev"; 
 }
 
 export const getChannels = async () => {
