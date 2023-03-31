@@ -16,6 +16,8 @@ phases:
     commands:
       - echo "$PWD"
       - cd ../
+      - mkdir target
+      - echo "$PWD"
       - cp -a Backend/target/*.jar target/
       - echo Build completed
 artifacts:
