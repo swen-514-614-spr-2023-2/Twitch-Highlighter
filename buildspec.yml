@@ -16,12 +16,11 @@ phases:
     commands:
       - echo "$PWD"
       - cd ../
-      - mkdir target
       - echo "$PWD"
-      - cp -a Backend/target/*.jar target/
+      - cp -a Backend/target/*.jar .
       - echo Build completed
 artifacts:
   files:
-    - target/*.jar
+    - *.jar
     - scripts/*.sh
     - appspec.yml
