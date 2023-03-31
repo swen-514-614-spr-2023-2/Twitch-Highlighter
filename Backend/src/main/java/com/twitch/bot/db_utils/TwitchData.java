@@ -77,8 +77,6 @@ public class TwitchData {
                 .applyConnectionString(connectionString)
                 .build();
         mongoClient = MongoClients.create(settings);
-        Logger mongoLogger = Logger.getLogger("org.mongodb.driver");
-        mongoLogger.setLevel(Level.OFF);
     }
 
     public void makeConnectionToDynamoDB(List<String> dynamoDbNames) {

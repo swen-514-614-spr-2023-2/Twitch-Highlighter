@@ -36,12 +36,16 @@ public class ScheduleTwitchLogic {
     private ApiHandler apiHandler;
     private Double avg_user_comment = 0.01;
 
+    public ScheduleTwitchLogic(TwitchData twitchData, ApiHandler apiHandler){
+        this.twitchData = twitchData;
+        this.apiHandler = apiHandler;
+    }
     @Scheduled(fixedRate = 15000)
     public void jobRunner() throws Exception {
         Long currentTime = System.currentTimeMillis();
         LOG.log(Level.INFO, "currentTime In Schedule ::: " + currentTime);
-        twitchData = getTwitchDataInstance();
-        apiHandler = new ApiHandler(twitchData);
+        // twitchData = getTwitchDataInstance();
+        // apiHandler = new ApiHandler(twitchData);
         List<Channel> allChannelNames = getChannelNames();
         Iterator<Channel> allChannelNamesIter = allChannelNames.iterator();
         while(allChannelNamesIter.hasNext()){
@@ -93,17 +97,19 @@ public class ScheduleTwitchLogic {
         return avg_comment_multiplied_viewer_frequencySeconds;
     }
 
-    public TwitchData getTwitchDataInstance() throws Exception{
-        LOG.log(Level.INFO, "Current Path In Schedule ::: " + System.getProperty("user.dir"));
-        try (InputStream input = new FileInputStream("src/main/resources/application.properties")) {
-            Properties prop = new Properties();
-            prop.load(input);
-            return new TwitchData(prop.getProperty("mongodb.password"), false, null);
-        } catch (Exception ex) {
-            LOG.log(Level.SEVERE, "Exception in loading properties file ::: ", ex);
-            throw ex;
-        }
-    }
+    // public TwitchData getTwitchDataInstance() throws Exception{
+    //     LOG.log(Level.INFO, "Current Path In Schedule ::: " + System.getProperty("user.dir"));
+    //     String nonAwsPath = "src/main/resources/application.properties";
+    //     String awsPath = "../../../../../resources//application.properties";
+    //     try (InputStream input = new FileInputStream("src/main/resources/application.properties")) {
+    //         Properties prop = new Properties();
+    //         prop.load(input);
+    //         return new TwitchData(prop.getProperty("mongodb.password"), false, null);
+    //     } catch (Exception ex) {
+    //         LOG.log(Level.SEVERE, "Exception in loading properties file ::: ", ex);
+    //         throw ex;
+    //     }
+    // }
 
     public String awsSentimentalAnalysis(String messageText){
        
