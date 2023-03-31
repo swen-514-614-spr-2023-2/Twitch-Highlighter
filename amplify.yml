@@ -8,7 +8,7 @@ applications:
         build:
           commands:
             - echo "$PWD"
-            - cd Twitchapp/
+            - cd frontend/Twitchapp/
             - IS_AWS_BUILD=${IS_AWS_BUILD}
             - npm run build
       artifacts:
