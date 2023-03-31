@@ -8,7 +8,6 @@ if(!IS_AWS_BUILD){
 }
 
 export const getChannels = async () => {
-  console.log(process);
   console.log(IS_AWS_BUILD);
   console.log(domain);
   const response = await axios.get(domain + "/channels",{
