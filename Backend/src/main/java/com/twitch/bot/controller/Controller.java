@@ -1,6 +1,7 @@
 package com.twitch.bot.controller;
 
 import java.util.HashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -28,11 +29,13 @@ public class Controller {
 
     @GetMapping("/channels")
     public ResponseEntity<Object> getTwitchChannels() throws Exception {
+        LOG.log(Level.INFO, "Inside Channels");
         return new ResponseEntity<>(twitch_connection.getAllChannels(), HttpStatus.OK);
     }
 
     @GetMapping("/twitch_analysis")
     public ResponseEntity<Object> getTwitchAnalysisData(@RequestParam("channel_name") String channelName) throws Exception {
+        LOG.log(Level.INFO, "Inside twitch_analysis");
         HashMap<String, Object> response = new HashMap<>();
         response.put("twitch_analysis", twitch_connection.getTwitchAnalysisOfAChannel(channelName).toList().stream().map(m -> ((HashMap<String, Object>) m)).collect(Collectors.toList()));
         response.put("channel_name", channelName);
@@ -41,6 +44,7 @@ public class Controller {
 
     @GetMapping("/channel_broadcastId")
     public ResponseEntity<Object> getChannelBroadcastId(@RequestParam("channel_name") String channelName) throws Exception {
+        LOG.log(Level.INFO, "Inside channel_broadcastId");
         return new ResponseEntity<>(twitch_connection.getUserBroadcasterId(channelName), HttpStatus.OK);
     }
 
