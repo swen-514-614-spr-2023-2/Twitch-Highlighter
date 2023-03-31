@@ -19,4 +19,4 @@ applications:
         paths:
           - echo "$PWD"
           - node_modules/**/*
-    appRoot: fronten/Twitchapp
+    appRoot: frontend/Twitchapp
