@@ -39,7 +39,7 @@ public class ScheduleTwitchLogic {
     @Scheduled(fixedRate = 15000)
     public void jobRunner() throws Exception {
         Long currentTime = System.currentTimeMillis();
-        LOG.log(Level.SEVERE, "currentTime In Schedule ::: " + currentTime);
+        LOG.log(Level.INFO, "currentTime In Schedule ::: " + currentTime);
         twitchData = getTwitchDataInstance();
         apiHandler = new ApiHandler(twitchData);
         List<Channel> allChannelNames = getChannelNames();
@@ -94,6 +94,7 @@ public class ScheduleTwitchLogic {
     }
 
     public TwitchData getTwitchDataInstance() throws Exception{
+        LOG.log(Level.INFO, "Current Path In Schedule ::: " + System.getProperty("user.dir"));
         try (InputStream input = new FileInputStream("src/main/resources/application.properties")) {
             Properties prop = new Properties();
             prop.load(input);

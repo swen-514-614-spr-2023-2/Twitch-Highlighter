@@ -205,6 +205,7 @@ public class Connection {
 
     public List<HashMap<String, Object>> getAllChannels(){
         HashMap<String, Channel> channels = ChannelsData.getChannels();
+        LOG.log(Level.INFO, "channels ::: "+ channels);
         Iterator<String> channelsIter = channels.keySet().iterator();
         List<HashMap<String, Object>> result = new ArrayList<>();
         while(channelsIter.hasNext()){
@@ -216,6 +217,7 @@ public class Connection {
             channelDtls.put("twitch_id", channel.getTwitchId());
             result.add(channelDtls);
         }
+        LOG.log(Level.INFO, "result ::: "+ result);
         return result;
     }
 }
