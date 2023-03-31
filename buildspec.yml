@@ -19,11 +19,13 @@ phases:
       - echo "$PWD"
       - cp -a Backend/target/*.jar app.jar
       - mkdir .ebextensions
-      - cp -a Backend/src/main/resources/.ebextensions/* .ebextensions/
+      - cp -a Backend/src/main/resources/.ebextensions/logs.config logs.config
+      - cp -a Backend/src/main/resources/.ebextensions/tail-logs.config tail-logs.config
       - echo Build completed
 artifacts:
   files:
     - app.jar
     - scripts/*.sh
     - appspec.yml
-    - .ebextensions/*
+    - logs.config
+    - tail-logs.config
