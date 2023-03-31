@@ -11,14 +11,13 @@ applications:
             - echo "$PWD"
             - IS_AWS_BUILD=${IS_AWS_BUILD}
             - npm run build
+            - echo "$PWD"
+            - ls
+            - cd ../
+            - echo "$PWD"
+            - ls
       artifacts:
-        baseDirectory: 
-          - echo "$PWD"
-          - ls
-          - cd ../
-          - echo "$PWD"
-          - ls
-          - ./Twitchapp/build
+        baseDirectory: ./Twitchapp/build
         files:
           - '**/*'
       cache:
