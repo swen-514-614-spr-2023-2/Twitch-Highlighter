@@ -6,8 +6,10 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.json.JSONObject;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,14 +25,21 @@ import com.twitch.bot.twitch_connection.Connection;
 public class Controller {
     private static final Logger LOG = Logger.getLogger(Controller.class.getName());
     private Connection twitch_connection;
+    HttpHeaders responseHeaders = new HttpHeaders();
+    
     public Controller(ChannelsData channelsData, Connection twitch_connection) throws Exception{
         this.twitch_connection = twitch_connection;
+        responseHeaders.set("Access-Control-Allow-Headers", "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token");
+        responseHeaders.set("Access-Control-Allow-Methods", "OPTIONS,POST,GET,DELETE,PUT");
+        responseHeaders.set("Access-Control-Allow-Credentials", "true");
+        responseHeaders.set("Access-Control-Allow-Origin", "*");
+        responseHeaders.set("X-Requested-With", "*");
     }
 
     @GetMapping("/channels")
     public ResponseEntity<Object> getTwitchChannels() throws Exception {
         LOG.log(Level.INFO, "Inside Channels");
-        return new ResponseEntity<>(twitch_connection.getAllChannels(), HttpStatus.OK);
+        return new ResponseEntity<>(twitch_connection.getAllChannels(), responseHeaders, HttpStatus.OK);
     }
 
     @GetMapping("/twitch_analysis")
@@ -39,25 +48,25 @@ public class Controller {
         HashMap<String, Object> response = new HashMap<>();
         response.put("twitch_analysis", twitch_connection.getTwitchAnalysisOfAChannel(channelName).toList().stream().map(m -> ((HashMap<String, Object>) m)).collect(Collectors.toList()));
         response.put("channel_name", channelName);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(response, responseHeaders, HttpStatus.OK);
     }
 
     @GetMapping("/channel_broadcastId")
     public ResponseEntity<Object> getChannelBroadcastId(@RequestParam("channel_name") String channelName) throws Exception {
         LOG.log(Level.INFO, "Inside channel_broadcastId");
-        return new ResponseEntity<>(twitch_connection.getUserBroadcasterId(channelName), HttpStatus.OK);
+        return new ResponseEntity<>(twitch_connection.getUserBroadcasterId(channelName), responseHeaders, HttpStatus.OK);
     }
 
     @PostMapping("/addChannel")
     public ResponseEntity<Object> subscribeChannel(@RequestParam("channel_name") String channelName) throws Exception {
         twitch_connection.addAndJoinChannel(channelName);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(responseHeaders, HttpStatus.OK);
     }
 
     @DeleteMapping("/removeChannel")
     public ResponseEntity<Object> unSubscribeChannel(@RequestParam("channel_name") String channelName) throws Exception {
         twitch_connection.removeAndDeleteChannelData(channelName);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(responseHeaders, HttpStatus.OK);
     }
 
 

@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const IS_AWS_BUILD = process.env.IS_AWS_BUILD;
+const IS_AWS_BUILD = false;
+//process.env.IS_AWS_BUILD;
 
 let domain = "http://localhost:8080";
 if(!IS_AWS_BUILD){
