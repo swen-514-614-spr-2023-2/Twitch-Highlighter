@@ -5,7 +5,7 @@ const IS_AWS_BUILD = false;
 
 let domain = "http://localhost:8080";
 if(!IS_AWS_BUILD){
-  domain = "https://95t20e0kf9.execute-api.us-east-1.amazonaws.com/dev"; 
+  domain = "https://qa3hncyg0j.execute-api.us-east-1.amazonaws.com/dev/"; 
 }
 
 export const getChannels = async () => {
