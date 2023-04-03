@@ -11,7 +11,8 @@ applications:
             - echo "$PWD"
             - IS_AWS_BUILD=${IS_AWS_BUILD}
             - VITE_IS_AWS_BUILD=${VITE_IS_AWS_BUILD}
-            - echo "REACT_APP_TEST_VARIABLE=$REACT_APP_TEST_VARIABLE" >> .env
+            - echo "IS_AWS_BUILD=$IS_AWS_BUILD" >> .env
+            - echo "VITE_IS_AWS_BUILD=$VITE_IS_AWS_BUILD" >> .env
             - npm run build
       artifacts:
         baseDirectory: dist
