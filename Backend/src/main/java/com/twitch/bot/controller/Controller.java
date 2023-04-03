@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.twitch.bot.scheduler.ScheduleTwitchLogic;
 import com.twitch.bot.twitch_connection.ChannelsData;
 import com.twitch.bot.twitch_connection.Connection;
 
@@ -35,7 +36,8 @@ public class Controller {
     @GetMapping("/channels")
     public ResponseEntity<Object> getTwitchChannels() throws Exception {
         LOG.log(Level.INFO, "Inside Channels");
-        LOG.log(Level.INFO, "IS_AWS_BUILD" + System.getenv("access_id"));
+        LOG.log(Level.INFO, "IS_AWS_BUILD" + System.getenv("IS_AWS_BUILD"));
+        LOG.log(Level.INFO, "IS_AWS_BUILD_Logic" + ScheduleTwitchLogic.getAwsBuild());
         return new ResponseEntity<>(twitch_connection.getAllChannels(), HttpStatus.OK);
     }
 

@@ -12,6 +12,8 @@ import java.util.logging.Logger;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -35,6 +37,13 @@ public class ScheduleTwitchLogic {
     private TwitchData twitchData;
     private ApiHandler apiHandler;
     private Double avg_user_comment = 0.01;
+
+    @Autowired
+    private static Environment environmentVar;
+
+    public static Object getAwsBuild(){
+        return environmentVar.getProperty("IS_AWS_BUILD");
+    }
 
     public ScheduleTwitchLogic(TwitchData twitchData, ApiHandler apiHandler){
         this.twitchData = twitchData;
