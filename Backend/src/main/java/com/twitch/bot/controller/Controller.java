@@ -21,8 +21,8 @@ import com.twitch.bot.scheduler.ScheduleTwitchLogic;
 import com.twitch.bot.twitch_connection.ChannelsData;
 import com.twitch.bot.twitch_connection.Connection;
 
-// @CrossOrigin(origins = "http://localhost:5173/")
-@CrossOrigin(origins = "https://main.dih57i7x15b97.amplifyapp.com/")
+//@CrossOrigin(origins = "http://localhost:5173/")
+@CrossOrigin(origins = {"https://main.dih57i7x15b97.amplifyapp.com/", "http://localhost:5173/"})
 @RestController
 public class Controller {
     private static final Logger LOG = Logger.getLogger(Controller.class.getName());

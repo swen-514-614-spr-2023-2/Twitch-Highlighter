@@ -2,8 +2,8 @@ import axios from "axios";
 
 const IS_AWS_BUILD = import.meta.env.IS_AWS_BUILD;
 
-let domain = "http://localhost:8080";
-if(!IS_AWS_BUILD){
+let domain = "http://localhost:5000";
+if(IS_AWS_BUILD){
   domain = "https://qa3hncyg0j.execute-api.us-east-1.amazonaws.com/dev"; 
 }
 

@@ -37,6 +37,7 @@ const Clips = () => {
   const {channel_name} = useParams();
   const [currentClip, setCurrentClip] = useState<Analysis>();
   const [index, setIndex] = useState(0);
+  const location = window.location.hostname;
 
   function moveToNext(index: any){
     debugger;
@@ -98,11 +99,9 @@ const Clips = () => {
                     {/* <AiFillPlaySquare size={40} /> */}
                 
                 </HStack>
-                (
                   <AspectRatio>
-                    <iframe src={currentClip?.clip_details.embed_url + "&parent=localhost"}></iframe>
+                    <iframe src={currentClip?.clip_details.embed_url + "&parent=" + location}></iframe>
                   </AspectRatio>
-                )
                 
               </Box>
           </Stack>
