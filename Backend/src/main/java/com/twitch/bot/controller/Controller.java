@@ -36,8 +36,6 @@ public class Controller {
     @GetMapping("/channels")
     public ResponseEntity<Object> getTwitchChannels() throws Exception {
         LOG.log(Level.INFO, "Inside Channels");
-        LOG.log(Level.INFO, "IS_AWS_BUILD" + System.getenv("IS_AWS_BUILD"));
-        LOG.log(Level.INFO, "IS_AWS_BUILD_Logic" + ScheduleTwitchLogic.getAwsBuild());
         return new ResponseEntity<>(twitch_connection.getAllChannels(), HttpStatus.OK);
     }
 

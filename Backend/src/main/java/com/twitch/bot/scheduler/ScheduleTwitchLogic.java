@@ -38,13 +38,6 @@ public class ScheduleTwitchLogic {
     private ApiHandler apiHandler;
     private Double avg_user_comment = 0.01;
 
-    @Autowired
-    private static Environment environmentVar;
-
-    public static Object getAwsBuild(){
-        return environmentVar.getProperty("IS_AWS_BUILD");
-    }
-
     public ScheduleTwitchLogic(TwitchData twitchData, ApiHandler apiHandler){
         this.twitchData = twitchData;
         this.apiHandler = apiHandler;
