@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const IS_AWS_BUILD = import.meta.env.IS_AWS_BUILD;
+const IS_AWS_BUILD = import.meta.env.VITE_IS_AWS_BUILD;
 
 let domain = "http://localhost:5000";
 if(IS_AWS_BUILD){

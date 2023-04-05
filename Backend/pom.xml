@@ -109,14 +109,21 @@
 		 <dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk</artifactId>
-			<version>1.0.12</version>
+			<version>1.12.442</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-dynamodb</artifactId>
-			<version>1.12.435</version>
+			<version>1.12.442</version>
 		</dependency>
+
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>dynamodbmapper-v1</artifactId>
+			<version>2.0.0-preview-13</version>
+		</dependency>
+
 
 	</dependencies>
 

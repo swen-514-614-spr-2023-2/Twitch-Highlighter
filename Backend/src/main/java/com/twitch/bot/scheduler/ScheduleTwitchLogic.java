@@ -1,19 +1,14 @@
 package com.twitch.bot.scheduler;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -76,7 +71,7 @@ public class ScheduleTwitchLogic {
         if(messages.length() >= thresholdValue){
             String sentimental_result = awsSentimentalAnalysis(messageMerge(messages));
             JSONObject clips = awsClipsGeneration(channel);
-            twitchData.updateTwitchAnalysis(channel, sentimental_result, clips);
+            twitchData.addTwitchAnalysis(channel, sentimental_result, clips, System.currentTimeMillis());
         }
         twitchData.deleteTwitchMessageForChannel(channel, tillTimeStamp);
     }
@@ -100,15 +95,11 @@ public class ScheduleTwitchLogic {
     public String awsSentimentalAnalysis(String messageText){
        
         Region region = Region.US_EAST_1;
+
+        JSONObject credentials = twitchData.getCloudCredentials();
         
-        if(!TwitchData.isAwsEnvironment()){
-            JSONObject credentials = twitchData.getCloudCredentials();
-            System.setProperty("aws.accessKeyId",credentials.getString("access_id"));
-            System.setProperty("aws.secretAccessKey",credentials.getString("access_key"));
-        }else{
-            System.setProperty("aws.accessKeyId", System.getenv("access_id"));
-            System.setProperty("aws.secretAccessKey", System.getenv("access_key"));
-        }
+        System.setProperty("aws.accessKeyId", credentials.get("access_id").toString());
+        System.setProperty("aws.secretAccessKey", credentials.get("access_key").toString());
        
 
         ComprehendClient comClient = ComprehendClient.builder()

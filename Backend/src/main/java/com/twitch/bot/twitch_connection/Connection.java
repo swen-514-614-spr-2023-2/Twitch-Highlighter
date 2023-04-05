@@ -43,10 +43,10 @@ public class Connection {
         this.connect();
         HashMap<String, Channel> channels = ChannelsData.getChannels();
         Iterator<String> channelsIter = channels.keySet().iterator();
-        // while(channelsIter.hasNext()){
-        //     Channel channel = channels.get(channelsIter.next());
-        //     this.joinChannel(channel.getChannelName());
-        // }
+        while(channelsIter.hasNext()){
+            Channel channel = channels.get(channelsIter.next());
+            this.joinChannel(channel.getChannelName());
+        }
     }
 
     public void sendCommandMessage(Object message) {
