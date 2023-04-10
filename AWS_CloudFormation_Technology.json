@@ -461,6 +461,33 @@
           ]
         }
       },
+      "CodePipelineWebhook": {
+        "Type": "AWS::CodePipeline::Webhook",
+        "Properties": {
+          "AuthenticationConfiguration": {
+            "SecretToken": "{{resolve:secretsmanager:TwitchSecrets:SecretString:GITHUB_ACCESS_TOKEN}}"
+          },
+          "Filters": [
+            {
+              "JsonPath": "$.ref",
+              "MatchEquals": "refs/heads/main"
+            }
+          ],
+          "Authentication": "GITHUB_HMAC",
+          "TargetPipeline": {
+            "Ref": "CodePipelinePipeline"
+          },
+          "TargetAction": "Source",
+          "Name": "MyWebhook",
+          "TargetPipelineVersion": {
+            "Fn::GetAtt": [
+              "CodePipelinePipeline",
+              "Version"
+            ]
+          },
+          "RegisterWithThirdParty": "true"
+        }
+      },
       "AmplifyApp": {
         "Type": "AWS::Amplify::App",
         "Properties": {
