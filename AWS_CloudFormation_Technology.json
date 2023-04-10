@@ -478,7 +478,7 @@
             "Ref": "CodePipelinePipeline"
           },
           "TargetAction": "Source",
-          "Name": "MyWebhook",
+          "Name": "CodePipelineWebhook",
           "TargetPipelineVersion": {
             "Fn::GetAtt": [
               "CodePipelinePipeline",
