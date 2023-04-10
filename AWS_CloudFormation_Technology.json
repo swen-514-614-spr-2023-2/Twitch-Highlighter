@@ -1,0 +1,515 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Metadata": {
+      "Generator": "former2"
+    },
+    "Description": "",
+    "Resources": {
+      "S3Bucket2": {
+        "Type": "AWS::S3::Bucket",
+        "Properties": {
+          "BucketName": {
+            "Fn::Sub": "codepipeline-${AWS::Region}-162902136482"
+          },
+          "BucketEncryption": {
+            "ServerSideEncryptionConfiguration": [
+              {
+                "ServerSideEncryptionByDefault": {
+                  "SSEAlgorithm": "AES256"
+                },
+                "BucketKeyEnabled": false
+              }
+            ]
+          }
+        }
+      },
+      "S3BucketPolicy2": {
+        "Type": "AWS::S3::BucketPolicy",
+        "Properties": {
+          "Bucket": {
+            "Ref": "S3Bucket2"
+          },
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Id": "SSEAndSSLPolicy",
+            "Statement": [
+              {
+                "Sid": "DenyUnEncryptedObjectUploads",
+                "Effect": "Deny",
+                "Principal": "*",
+                "Action": "s3:PutObject",
+                "Resource": {
+                  "Fn::Sub": "arn:aws:s3:::${S3Bucket2}/*"
+                },
+                "Condition": {
+                  "StringNotEquals": {
+                    "s3:x-amz-server-side-encryption": "aws:kms"
+                  }
+                }
+              },
+              {
+                "Sid": "DenyInsecureConnections",
+                "Effect": "Deny",
+                "Principal": "*",
+                "Action": "s3:*",
+                "Resource": {
+                  "Fn::Sub": "arn:aws:s3:::${S3Bucket2}/*"
+                },
+                "Condition": {
+                  "Bool": {
+                    "aws:SecureTransport": "false"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "ElasticBeanstalkApplication": {
+        "Type": "AWS::ElasticBeanstalk::Application",
+        "Properties": {
+          "ApplicationName": "TwitchApp"
+        }
+      },
+      "ElasticBeanstalkEnvironment": {
+        "Type": "AWS::ElasticBeanstalk::Environment",
+        "DependsOn":[
+          "ElasticBeanstalkApplication",
+          "ElasticBeanstalkConfigurationTemplate"
+        ],
+        "Properties": {
+          "EnvironmentName": "TwitchApp-environment",
+          "ApplicationName": {
+            "Ref": "ElasticBeanstalkApplication"
+          },
+          "Tier": {
+            "Name": "WebServer",
+            "Type": "Standard"
+          },
+          "TemplateName":{
+            "Ref":"ElasticBeanstalkConfigurationTemplate"
+          },
+          "OptionSettings": [
+            {
+              "Namespace": "aws:autoscaling:launchconfiguration",
+              "OptionName": "IamInstanceProfile",
+              "Value": {
+                "Fn::Sub": "aws-elasticbeanstalk-ec2-role"
+              }
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:environment",
+              "OptionName": "ServiceRole",
+              "Value": {
+                "Fn::Sub": "aws-elasticbeanstalk-service-role"
+              }
+            }
+          ],
+          "CNAMEPrefix": "twitchaws"
+        }
+      },
+      "ElasticBeanstalkConfigurationTemplate": {
+        "Type": "AWS::ElasticBeanstalk::ConfigurationTemplate",
+        "Properties": {
+          "ApplicationName": {
+            "Ref": "ElasticBeanstalkApplication"
+          },
+          "SolutionStackName": "64bit Amazon Linux 2 v3.4.6 running Corretto 17",
+          "OptionSettings": [
+            {
+              "Namespace": "aws:ec2:instances",
+              "OptionName": "InstanceTypes",
+              "Value": "t3.micro,t3.small"
+            },
+            {
+              "Namespace": "aws:ec2:instances",
+              "OptionName": "SupportedArchitectures",
+              "Value": "x86_64"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:application",
+              "OptionName": "Application Healthcheck URL",
+              "Value": "/"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+              "OptionName": "SystemType",
+              "Value": "enhanced"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:managedactions",
+              "OptionName": "ManagedActionsEnabled",
+              "Value": "true"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:managedactions",
+              "OptionName": "PreferredStartTime",
+              "Value": "THU:03:27"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:managedactions",
+              "OptionName": "ServiceRoleForManagedUpdates",
+              "Value": "arn:aws:iam::697006387197:role/aws-elasticbeanstalk-service-role"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:managedactions:platformupdate",
+              "OptionName": "UpdateLevel",
+              "Value": "minor"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:application:environment",
+              "OptionName": "AWS_ENVIRONMENT",
+              "Value": "true"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:application:environment",
+              "OptionName": "Dummy",
+              "Value": "Yes"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:application:environment",
+              "OptionName": "GRADLE_HOME",
+              "Value": "/usr/local/gradle"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:application:environment",
+              "OptionName": "M2",
+              "Value": "/usr/local/apache-maven/bin"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:application:environment",
+              "OptionName": "M2_HOME",
+              "Value": "/usr/local/apache-maven"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:cloudwatch:logs",
+              "OptionName": "RetentionInDays",
+              "Value": "1"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:cloudwatch:logs",
+              "OptionName": "StreamLogs",
+              "Value": "true"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:environment",
+              "OptionName": "EnvironmentType",
+              "Value": "SingleInstance"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:environment",
+              "OptionName": "ServiceRole",
+              "Value": "arn:aws:iam::697006387197:role/aws-elasticbeanstalk-service-role"
+            }
+          ]
+        }
+      },
+      "ApiGatewayRestApi": {
+        "Type": "AWS::ApiGateway::RestApi",
+        "Properties": {
+          "Name": "twitchapi",
+          "ApiKeySourceType": "HEADER",
+          "EndpointConfiguration": {
+            "Types": [
+              "REGIONAL"
+            ]
+          }
+        }
+      },
+      "ApiGatewayStage": {
+        "Type": "AWS::ApiGateway::Stage",
+        "Properties": {
+          "StageName": "prod",
+          "DeploymentId": {
+            "Ref": "ApiGatewayDeployment"
+          },
+          "RestApiId": {
+            "Ref": "ApiGatewayRestApi"
+          },
+          "CacheClusterEnabled": false,
+          "TracingEnabled": false
+        }
+      },
+      "ApiGatewayDeployment": {
+        "Type": "AWS::ApiGateway::Deployment",
+        "DependsOn":[
+          "ApiGatewayMethod"
+        ],
+        "Properties": {
+          "RestApiId": {
+            "Ref": "ApiGatewayRestApi"
+          }
+        }
+      },
+      "ApiGatewayResource": {
+        "Type": "AWS::ApiGateway::Resource",
+        "Properties": {
+          "RestApiId": {
+            "Ref": "ApiGatewayRestApi"
+          },
+          "PathPart": "twitchaws",
+          "ParentId": {
+            "Fn::GetAtt": [
+              "ApiGatewayRestApi",
+              "RootResourceId"
+            ]
+          }
+        }
+      },
+      "ApiGatewayResource2": {
+        "Type": "AWS::ApiGateway::Resource",
+        "Properties": {
+          "RestApiId": {
+            "Ref": "ApiGatewayRestApi"
+          },
+          "PathPart": "{proxy+}",
+          "ParentId": {
+            "Ref": "ApiGatewayResource"
+          }
+        }
+      },
+      "ApiGatewayMethod": {
+        "Type": "AWS::ApiGateway::Method",
+        "Properties": {
+          "RestApiId": {
+            "Ref": "ApiGatewayRestApi"
+          },
+          "ResourceId": {
+            "Ref": "ApiGatewayResource2"
+          },
+          "HttpMethod": "ANY",
+          "AuthorizationType": "NONE",
+          "ApiKeyRequired": false,
+          "RequestParameters": {
+            "method.request.path.proxy": true
+          },
+          "Integration": {
+            "CacheKeyParameters": [
+              "method.request.path.proxy"
+            ],
+            "CacheNamespace": {
+              "Ref": "ApiGatewayResource2"
+            },
+            "ConnectionType": "INTERNET",
+            "IntegrationHttpMethod": "ANY",
+            "IntegrationResponses": [
+              {
+                "ResponseTemplates": {},
+                "StatusCode": "200"
+              }
+            ],
+            "PassthroughBehavior": "WHEN_NO_MATCH",
+            "RequestParameters": {
+              "integration.request.path.proxy": "method.request.path.proxy"
+            },
+            "TimeoutInMillis": 29000,
+            "Type": "HTTP_PROXY",
+            "Uri": {
+              "Fn::Sub": "http://twitchaws.${AWS::Region}.elasticbeanstalk.com/{proxy}"
+            }
+          }
+        }
+      },
+      "CodeBuildProject": {
+        "Type": "AWS::CodeBuild::Project",
+        "Properties": {
+          "Name": "TwitchBuild",
+          "Source": {
+            "GitCloneDepth": 1,
+            "GitSubmodulesConfig": {
+              "FetchSubmodules": false
+            },
+            "InsecureSsl": false,
+            "Location": "https://github.com/swen-514-614-spr-2023-2/team-4.git",
+            "ReportBuildStatus": false,
+            "Type": "GITHUB",
+            "BuildSpec": "buildspec.yml"
+          },
+          "Artifacts": {
+            "Type": "NO_ARTIFACTS"
+          },
+          "Cache": {
+            "Type": "NO_CACHE"
+          },
+          "Environment": {
+            "ComputeType": "BUILD_GENERAL1_SMALL",
+            "Image": "aws/codebuild/amazonlinux2-x86_64-standard:4.0",
+            "ImagePullCredentialsType": "CODEBUILD",
+            "PrivilegedMode": false,
+            "Type": "LINUX_CONTAINER"
+          },
+          "ServiceRole": {
+            "Fn::Sub": "arn:aws:iam::697006387197:role/service-role/codebuild-andrews"
+          },
+          "TimeoutInMinutes": 60,
+          "QueuedTimeoutInMinutes": 480,
+          "EncryptionKey": {
+            "Fn::Sub": "arn:aws:kms:${AWS::Region}:697006387197:alias/aws/s3"
+          },
+          "BadgeEnabled": false,
+          "LogsConfig": {
+            "CloudWatchLogs": {
+              "Status": "ENABLED"
+            },
+            "S3Logs": {
+              "Status": "DISABLED",
+              "EncryptionDisabled": false
+            }
+          },
+          "Visibility": "PRIVATE"
+        }
+      },
+      "CodePipelinePipeline": {
+        "Type": "AWS::CodePipeline::Pipeline",
+        "Properties": {
+          "Name": "TwitchProject",
+          "RoleArn": {
+            "Fn::Sub": "arn:aws:iam::697006387197:role/service-role/AWSCodePipelineServiceRole-${AWS::Region}-Twitch-Project"
+          },
+          "ArtifactStore": {
+            "Location": {
+              "Ref": "S3Bucket2"
+            },
+            "Type": "S3"
+          },
+          "Stages": [
+            {
+              "Name": "Source",
+              "Actions": [
+                {
+                  "Name": "Source",
+                  "ActionTypeId": {
+                    "Category": "Source",
+                    "Owner": "ThirdParty",
+                    "Provider": "GitHub",
+                    "Version": "1"
+                  },
+                  "Configuration": {
+                    "Branch": "main",
+                    "OAuthToken": "{{resolve:secretsmanager:TwitchSecrets:SecretString:GITHUB_ACCESS_TOKEN}}",
+                    "Owner": "swen-514-614-spr-2023-2",
+                    "PollForSourceChanges": "false",
+                    "Repo": "team-4"
+                  },
+                  "OutputArtifacts": [
+                    {
+                      "Name": "SourceArtifact"
+                    }
+                  ],
+                  "Region": {
+                    "Ref": "AWS::Region"
+                  },
+                  "Namespace": "SourceVariables",
+                  "RunOrder": 1
+                }
+              ]
+            },
+            {
+              "Name": "Build",
+              "Actions": [
+                {
+                  "Name": "Build",
+                  "ActionTypeId": {
+                    "Category": "Build",
+                    "Owner": "AWS",
+                    "Provider": "CodeBuild",
+                    "Version": "1"
+                  },
+                  "Configuration": {
+                    "ProjectName": {
+                      "Ref": "CodeBuildProject"
+                    }
+                  },
+                  "InputArtifacts": [
+                    {
+                      "Name": "SourceArtifact"
+                    }
+                  ],
+                  "OutputArtifacts": [
+                    {
+                      "Name": "BuildArtifact"
+                    }
+                  ],
+                  "Region": {
+                    "Ref": "AWS::Region"
+                  },
+                  "Namespace": "BuildVariables",
+                  "RunOrder": 1
+                }
+              ]
+            },
+            {
+              "Name": "Deploy",
+              "Actions": [
+                {
+                  "Name": "Deploy",
+                  "ActionTypeId": {
+                    "Category": "Deploy",
+                    "Owner": "AWS",
+                    "Provider": "ElasticBeanstalk",
+                    "Version": "1"
+                  },
+                  "Configuration": {
+                    "ApplicationName": {
+                      "Ref": "ElasticBeanstalkApplication"
+                    },
+                    "EnvironmentName": {
+                      "Ref": "ElasticBeanstalkEnvironment"
+                    }
+                  },
+                  "InputArtifacts": [
+                    {
+                      "Name": "BuildArtifact"
+                    }
+                  ],
+                  "Region": {
+                    "Ref": "AWS::Region"
+                  },
+                  "Namespace": "DeployVariables",
+                  "RunOrder": 1
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "AmplifyApp": {
+        "Type": "AWS::Amplify::App",
+        "Properties": {
+          "Name": "team-4",
+          "Repository": "https://github.com/swen-514-614-spr-2023-2/team-4",
+          "EnvironmentVariables": [
+            {
+              "Name": "VITE_IS_AWS_BUILD",
+              "Value": "true"
+            },
+            {
+              "Name": "VITE_BACKEND_AWS_URL",
+              "Value": {
+                "Fn::Sub": "https://${ApiGatewayDeployment}.execute-api.${AWS::Region}.amazonaws.com/${ApiGatewayStage}"
+              }
+            }
+          ],
+          "BuildSpec": "amplify.yml",
+          "AccessToken": "{{resolve:secretsmanager:TwitchSecrets:SecretString:GITHUB_ACCESS_TOKEN}}"
+        }
+      },
+      "AmplifyBranch": {
+        "Type": "AWS::Amplify::Branch",
+        "Properties": {
+          "BranchName": "main",
+          "Stage": "PRODUCTION",
+          "AppId": {
+            "Fn::GetAtt": [
+              "AmplifyApp",
+              "AppId"
+            ]
+          },
+          "EnablePullRequestPreview": false,
+          "EnableAutoBuild": true,
+          "EnablePerformanceMode": false
+        }
+      }
+    }
+  }
+  

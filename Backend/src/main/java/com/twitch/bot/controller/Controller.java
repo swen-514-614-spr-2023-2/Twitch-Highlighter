@@ -5,11 +5,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import org.json.JSONObject;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.twitch.bot.scheduler.ScheduleTwitchLogic;
 import com.twitch.bot.twitch_connection.ChannelsData;
 import com.twitch.bot.twitch_connection.Connection;
 
@@ -66,23 +63,4 @@ public class Controller {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-
-    // @GetMapping("/addChannel")
-    // public ResponseEntity<Object> subscribeChannel() throws Exception {
-    //     twitch_connection.connect();
-    //     twitch_connection.joinChannel("tubbo");
-    //     return new ResponseEntity<>(HttpStatus.OK);
-    // }
-
-    // @GetMapping("/removeChannel")
-    // public ResponseEntity<Object> unSubscribeChannel() throws Exception {
-    //     twitch_connection.removeChannel("tubbo");
-    //     return new ResponseEntity<>(HttpStatus.OK);
-    // }
-
-    // @GetMapping("/clips")
-    // public ResponseEntity<Object> getClips() throws Exception {
-    //     twitch_connection.getUsers();
-    //     return new ResponseEntity<>(HttpStatus.OK);
-    // }
 }
