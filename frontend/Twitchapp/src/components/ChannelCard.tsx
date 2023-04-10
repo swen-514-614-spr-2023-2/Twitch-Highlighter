@@ -11,8 +11,8 @@ interface Props {
 const ChannelCard = (channelData: any) => {
   return (
     <Center>
-      <Link as={RouteLink} to={channelData.channel.channel_name + '/clips'}>
-        <Card borderRadius={10} overflow="hidden" maxW="sm">
+      <Link as={RouteLink} to={channelData.channel.channel_name + "/clips"}>
+        <Card borderRadius={10} overflow="hidden" maxW="sm" width="300px">
           {/* <Image src={channel.imageUrl} /> */}
           <Image src={channelImage} />
           <CardBody>

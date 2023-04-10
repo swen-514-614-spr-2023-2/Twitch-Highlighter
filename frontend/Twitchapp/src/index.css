@@ -1,3 +1,7 @@
-.dN{
-    display: none;
-  }
+.dN {
+  display: none;
+}
+
+form {
+  width: 100%;
+}

@@ -1,11 +1,45 @@
-import { HStack, Image } from "@chakra-ui/react";
-import React from "react";
+import {
+  Button,
+  HStack,
+  Image,
+  Input,
+  InputGroup,
+  InputLeftElement,
+} from "@chakra-ui/react";
+import React, { useEffect, useRef, useState } from "react";
 import logo from "../assets/Twitch_TV.png";
+import { BsSearch } from "react-icons/bs";
 
-const NavBar = () => {
+interface Props {
+  onSearch: (text: string) => void;
+}
+
+const NavBar = ({ onSearch }: Props) => {
+  const [searchText, setSearchText] = useState("");
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    console.log(searchText);
+  }, [searchText]);
+
+  const handleSearch = () => {
+    const text = ref.current?.value ?? "";
+    setSearchText(text);
+    onSearch(text);
+  };
+
   return (
     <HStack>
       <Image src={logo} boxSize="60px" />
+      <InputGroup>
+        <InputLeftElement children={<BsSearch />} />
+        <Input
+          ref={ref}
+          borderRadius={20}
+          placeholder="Search twitch channels....."
+          variant={"filled"}
+          onChange={handleSearch}
+        ></Input>
+      </InputGroup>
     </HStack>
   );
 };
