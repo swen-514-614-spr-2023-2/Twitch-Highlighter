@@ -247,24 +247,12 @@
           "RestApiId": {
             "Ref": "ApiGatewayRestApi"
           },
-          "PathPart": "twitchaws",
+          "PathPart": "{proxy+}",
           "ParentId": {
             "Fn::GetAtt": [
               "ApiGatewayRestApi",
               "RootResourceId"
             ]
-          }
-        }
-      },
-      "ApiGatewayResource2": {
-        "Type": "AWS::ApiGateway::Resource",
-        "Properties": {
-          "RestApiId": {
-            "Ref": "ApiGatewayRestApi"
-          },
-          "PathPart": "{proxy+}",
-          "ParentId": {
-            "Ref": "ApiGatewayResource"
           }
         }
       },
@@ -275,7 +263,7 @@
             "Ref": "ApiGatewayRestApi"
           },
           "ResourceId": {
-            "Ref": "ApiGatewayResource2"
+            "Ref": "ApiGatewayResource"
           },
           "HttpMethod": "ANY",
           "AuthorizationType": "NONE",
@@ -288,7 +276,7 @@
               "method.request.path.proxy"
             ],
             "CacheNamespace": {
-              "Ref": "ApiGatewayResource2"
+              "Ref": "ApiGatewayResource"
             },
             "ConnectionType": "INTERNET",
             "IntegrationHttpMethod": "ANY",
@@ -486,7 +474,7 @@
             {
               "Name": "VITE_BACKEND_AWS_URL",
               "Value": {
-                "Fn::Sub": "https://${ApiGatewayDeployment}.execute-api.${AWS::Region}.amazonaws.com/${ApiGatewayStage}"
+                "Fn::Sub": "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/${ApiGatewayStage}"
               }
             }
           ],
