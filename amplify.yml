@@ -9,10 +9,10 @@ applications:
         build:
           commands:
             - echo "$PWD"
-            - IS_AWS_BUILD=${IS_AWS_BUILD}
             - VITE_IS_AWS_BUILD=${VITE_IS_AWS_BUILD}
-            - echo "IS_AWS_BUILD=$IS_AWS_BUILD" >> .env
             - echo "VITE_IS_AWS_BUILD=$VITE_IS_AWS_BUILD" >> .env
+            - VITE_BACKEND_AWS_URL=${VITE_BACKEND_AWS_URL}
+            - echo "VITE_BACKEND_AWS_URL=$VITE_BACKEND_AWS_URL" >> .env
             - npm run build
       artifacts:
         baseDirectory: dist
