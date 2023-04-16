@@ -30,7 +30,7 @@ const ChannelCard = (channelData: any) => {
           {/* <Image src={channel.imageUrl} /> */}
           <Image src={channelImage} />
           <CardBody>
-            <HStack>
+            <HStack justifyContent={"space-between"}>
               <Heading fontSize="2xl">
                 {channelData.channel.channel_name}
               </Heading>
