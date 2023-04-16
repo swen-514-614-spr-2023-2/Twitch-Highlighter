@@ -10,8 +10,7 @@ import {
 } from "@chakra-ui/react";
 import React from "react";
 import { Link as RouteLink } from "react-router-dom";
-
-const Login = () => {
+const Register = () => {
   return (
     <Flex justifyContent={"center"} alignItems="center">
       <Stack justifyContent={"center"} alignItems="center">
@@ -25,18 +24,12 @@ const Login = () => {
               <FormLabel htmlFor="password">Password</FormLabel>
               <Input id="password" type={"password"} placeholder="*******" />
             </FormControl>
-            <Button>Login</Button>
+            <Button>Register</Button>
           </form>
-        </Box>
-        <Box>
-          Don't Have An Account?{" "}
-          <Link color={"teal"} as={RouteLink} to={"/register"}>
-            Register
-          </Link>
         </Box>
       </Stack>
     </Flex>
   );
 };
 
-export default Login;
+export default Register;

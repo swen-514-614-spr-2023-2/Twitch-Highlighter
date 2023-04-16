@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ChannelGrid from "./components/ChannelGrid";
 import Clips from "./components/Clips";
 import NavBar from "./components/NavBar";
+import Register from "./components/Register";
 
 function App() {
   const [searchText, setSearchText] = useState("");
@@ -22,6 +23,7 @@ function App() {
           <Routes>
             <Route path="/" element={<ChannelGrid searchText={searchText} />} />
             <Route path="/:channel_name/clips" element={<Clips />} />
+            <Route path="/register" element={<Register />} />
           </Routes>
         </Router>
       </GridItem>
