@@ -1,14 +1,28 @@
-import { Card, CardBody, Center, Heading, Image, Link } from "@chakra-ui/react";
-import React from "react";
+import {
+  Card,
+  CardBody,
+  Center,
+  Heading,
+  HStack,
+  Image,
+  Link,
+} from "@chakra-ui/react";
+import React, { useState } from "react";
 import { Channel } from "./ChannelGrid";
 import channelImage from "../assets/tubbo.png";
 import { Link as RouteLink } from "react-router-dom";
+import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 
 interface Props {
   channel: Channel;
 }
 // { channel }: Props (goes inside())
 const ChannelCard = (channelData: any) => {
+  const [isSubscribed, setSubscribe] = useState(false);
+  const subscribe = () => {
+    setSubscribe(!isSubscribed);
+  };
+
   return (
     <Center>
       <Link as={RouteLink} to={channelData.channel.channel_name + "/clips"}>
@@ -16,7 +30,17 @@ const ChannelCard = (channelData: any) => {
           {/* <Image src={channel.imageUrl} /> */}
           <Image src={channelImage} />
           <CardBody>
-            <Heading fontSize="2xl">{channelData.channel.channel_name}</Heading>
+            <HStack>
+              <Heading fontSize="2xl">
+                {channelData.channel.channel_name}
+              </Heading>
+              {isSubscribed && (
+                <AiFillHeart color="#ff6b81" size={20} onClick={subscribe} />
+              )}
+              {!isSubscribed && (
+                <AiOutlineHeart size={20} onClick={subscribe} />
+              )}
+            </HStack>
             {/* <Heading fontSize="2xl">Tubbo</Heading> */}
           </CardBody>
         </Card>
