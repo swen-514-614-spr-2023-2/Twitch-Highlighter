@@ -37,10 +37,13 @@ public class Channel {
     public Boolean getIsListeningToChannel(){
         return isListeningToChannel;
     }
+    
 
-    public void setIsListeningToChannel(Boolean isListeningToChannel){
-        this.isListeningToChannel = isListeningToChannel;
-        new TwitchData(null, false, null).updateChannelServerListeningData(isListeningToChannel, channel_name);
+    public void setIsListeningToChannel(Boolean isListeningToChannel, TwitchData twitchData){
+        if(twitchData != null){
+            this.isListeningToChannel = isListeningToChannel;
+            twitchData.updateChannelServerListeningData(isListeningToChannel, id);
+        }
     }
 
     @Override

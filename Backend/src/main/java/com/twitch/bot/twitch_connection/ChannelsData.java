@@ -35,6 +35,19 @@ public class ChannelsData {
         } 
     }
 
+    public static Channel getChannel(Integer channelId) {
+        HashMap<String, Channel> channels = getChannels();
+        Iterator<String> channelsIter = channels.keySet().iterator();
+        while(channelsIter.hasNext()){
+            String channelName = channelsIter.next();
+            Channel channelInfo = channels.get(channelName);
+            if(channelInfo.getId().equals(channelId)){
+                return channelInfo;
+            }
+        }
+        return null;
+    }
+
     public static Channel getChannel(String channel) {
         return channels.get(channel);
     }
@@ -55,7 +68,7 @@ public class ChannelsData {
         Channel channel = channels.get(channelName);
         twitch_bot.sendCommandMessage("JOIN " + "#" + channelName + "\r\n");
         LOG.log(Level.INFO, "> JOIN " + channelName);
-        channel.setIsListeningToChannel(true);
+        channel.setIsListeningToChannel(true, twitch_bot.getTwitchData());
         channels.put(channelName, channel);
         return channel;
     }
@@ -63,7 +76,7 @@ public class ChannelsData {
     public static void stopListeningToChannel(String channelName, Connection twitch_bot) {
         Channel channel = channels.get(channelName);
         twitch_bot.sendCommandMessage("PART " + "#" + channelName);
-        channel.setIsListeningToChannel(false);
+        channel.setIsListeningToChannel(false, twitch_bot.getTwitchData());
         channels.put(channelName, channel);
         LOG.log(Level.INFO, "> PART " + channelName);
     }

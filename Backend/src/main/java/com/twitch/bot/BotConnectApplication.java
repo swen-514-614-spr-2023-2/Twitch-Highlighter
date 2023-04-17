@@ -22,7 +22,7 @@ public class BotConnectApplication {
 	@Bean
 	public TaskScheduler taskScheduler() {
 		ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
-		threadPoolTaskScheduler.setPoolSize(8);
+		threadPoolTaskScheduler.setPoolSize(10);
 		threadPoolTaskScheduler.setThreadNamePrefix("task-scheduler");
 		return threadPoolTaskScheduler;
 	}

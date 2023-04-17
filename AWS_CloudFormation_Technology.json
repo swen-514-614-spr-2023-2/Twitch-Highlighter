@@ -1,9 +1,5 @@
 {
-    "AWSTemplateFormatVersion": "2010-09-09",
-    "Metadata": {
-      "Generator": "former2"
-    },
-    "Description": "",
+    "Description": "CloudFormation For AWS Twitch Integration",
     "Resources": {
       "S3Bucket2": {
         "Type": "AWS::S3::Bucket",
@@ -163,8 +159,28 @@
             },
             {
               "Namespace": "aws:elasticbeanstalk:application:environment",
-              "OptionName": "Dummy",
-              "Value": "Yes"
+              "OptionName": "AWS_ACCESS_ID",
+              "Value": "{{resolve:secretsmanager:TwitchIntegrationCredentials:SecretString:ACCESS_ID}}"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:application:environment",
+              "OptionName": "AWS_ACCESS_KEY",
+              "Value": "{{resolve:secretsmanager:TwitchIntegrationCredentials:SecretString:ACCESS_KEY}}"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:application:environment",
+              "OptionName": "RDS_USERNAME",
+              "Value": "{{resolve:secretsmanager:TwitchIntegrationCredentials:SecretString:RDS_USERNAME}}"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:application:environment",
+              "OptionName": "RDS_PASSWORD",
+              "Value": "{{resolve:secretsmanager:TwitchIntegrationCredentials:SecretString:RDS_PASSWORD}}"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:application:environment",
+              "OptionName": "MONGODB_PASSWORD",
+              "Value": "{{resolve:secretsmanager:TwitchIntegrationCredentials:SecretString:MONGODB_PASSWORD}}"
             },
             {
               "Namespace": "aws:elasticbeanstalk:application:environment",
@@ -200,6 +216,60 @@
               "Namespace": "aws:elasticbeanstalk:environment",
               "OptionName": "ServiceRole",
               "Value": "arn:aws:iam::697006387197:role/aws-elasticbeanstalk-service-role"
+            },
+            {
+              "ResourceName": "AWSEBRDSDatabase",
+              "Namespace": "aws:rds:dbinstance",
+              "OptionName": "DBAllocatedStorage",
+              "Value": "5"
+            },
+            {
+              "ResourceName": "AWSEBRDSDatabase",
+              "Namespace": "aws:rds:dbinstance",
+              "OptionName": "DBDeletionPolicy",
+              "Value": "Delete"
+            },
+            {
+              "ResourceName": "AWSEBRDSDatabase",
+              "Namespace": "aws:rds:dbinstance",
+              "OptionName": "DBEngine",
+              "Value": "mysql"
+            },
+            {
+              "ResourceName": "AWSEBRDSDatabase",
+              "Namespace": "aws:rds:dbinstance",
+              "OptionName": "DBEngineVersion",
+              "Value": "8.0.32"
+            },
+            {
+              "ResourceName": "AWSEBRDSDatabase",
+              "Namespace": "aws:rds:dbinstance",
+              "OptionName": "DBInstanceClass",
+              "Value": "db.t2.micro"
+            },
+            {
+              "ResourceName": "AWSEBRDSDatabase",
+              "Namespace": "aws:rds:dbinstance",
+              "OptionName": "DBPassword",
+              "Value": "{{resolve:secretsmanager:TwitchIntegrationCredentials:SecretString:RDS_PASSWORD}}"
+            },
+            {
+              "ResourceName": "AWSEBRDSDatabase",
+              "Namespace": "aws:rds:dbinstance",
+              "OptionName": "DBUser",
+              "Value": "{{resolve:secretsmanager:TwitchIntegrationCredentials:SecretString:RDS_USERNAME}}"
+            },
+            {
+              "ResourceName": "AWSEBRDSDatabase",
+              "Namespace": "aws:rds:dbinstance",
+              "OptionName": "HasCoupledDatabase",
+              "Value": "true"
+            },
+            {
+              "ResourceName": "AWSEBRDSDatabase",
+              "Namespace": "aws:rds:dbinstance",
+              "OptionName": "MultiAZDatabase",
+              "Value": "false"
             }
           ]
         }
@@ -374,7 +444,7 @@
                   },
                   "Configuration": {
                     "Branch": "main",
-                    "OAuthToken": "{{resolve:secretsmanager:TwitchSecrets:SecretString:GITHUB_ACCESS_TOKEN}}",
+                    "OAuthToken": "{{resolve:secretsmanager:TwitchIntegrationCredentials:SecretString:GITHUB_ACCESS_TOKEN}}",
                     "Owner": "swen-514-614-spr-2023-2",
                     "PollForSourceChanges": "false",
                     "Repo": "team-4"
@@ -465,7 +535,7 @@
         "Type": "AWS::CodePipeline::Webhook",
         "Properties": {
           "AuthenticationConfiguration": {
-            "SecretToken": "{{resolve:secretsmanager:TwitchSecrets:SecretString:GITHUB_ACCESS_TOKEN}}"
+            "SecretToken": "{{resolve:secretsmanager:TwitchIntegrationCredentials:SecretString:GITHUB_ACCESS_TOKEN}}"
           },
           "Filters": [
             {
@@ -506,7 +576,7 @@
             }
           ],
           "BuildSpec": "amplify.yml",
-          "AccessToken": "{{resolve:secretsmanager:TwitchSecrets:SecretString:GITHUB_ACCESS_TOKEN}}"
+          "AccessToken": "{{resolve:secretsmanager:TwitchIntegrationCredentials:SecretString:GITHUB_ACCESS_TOKEN}}"
         }
       },
       "AmplifyBranch": {

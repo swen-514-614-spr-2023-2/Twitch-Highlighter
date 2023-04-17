@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.logging.Logger;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.twitch.bot.api.ApiHandler;
@@ -29,6 +31,10 @@ public class Connection {
     private BufferedWriter twitch_writer;
     private TwitchData twitchData;
 
+    public TwitchData getTwitchData() {
+        return twitchData;
+    }
+
     public BufferedReader getTwitch_reader() {
         return twitch_reader;
     }
@@ -37,15 +43,27 @@ public class Connection {
         return twitch_writer;
     }
 
-    public Connection(ApiHandler apiHandler, TwitchData twitchData) throws Exception {
+    public Connection(ApiHandler apiHandler, TwitchData twitchData, @Value("${mandatory.channel.names}") String channelNames) throws Exception {
         this.apiHandler = apiHandler;
         this.twitchData = twitchData;
         this.connect();
         HashMap<String, Channel> channels = ChannelsData.getChannels();
+        if(channels.isEmpty()){
+            String[] channelNamesArr = channelNames.split(",");
+            populateMandatoryChannels(Arrays.asList(channelNamesArr));
+        }
         Iterator<String> channelsIter = channels.keySet().iterator();
         while(channelsIter.hasNext()){
             Channel channel = channels.get(channelsIter.next());
             this.joinChannel(channel.getChannelName());
+        }
+    }
+
+    private void populateMandatoryChannels(List<String> channelNames) throws Exception{
+        Iterator<String> channelNamesIter = channelNames.iterator();
+        while(channelNamesIter.hasNext()){
+            String channelName = channelNamesIter.next();
+            addAndJoinChannel(channelName);
         }
     }
 
@@ -80,7 +98,7 @@ public class Connection {
         Channel channel = ChannelsData.getChannel(channelName);
         if(channel != null){
             removeChannel(channel.getChannelName());
-            new ChannelsData(twitchData).removeChannel(channel);
+            twitchData.deleteChannelRelatedInfo(channel);
         }
     }
 
@@ -100,7 +118,7 @@ public class Connection {
     }
 
     public Boolean connect() throws Exception {
-        Boolean isFirstTimeConnect = !isConnectionRunning;
+        //Boolean isFirstTimeConnect = !isConnectionRunning;
         if (!isConnectionRunning) {
             isConnectionRunning = apiHandler.CONNECT();
         }
@@ -157,7 +175,7 @@ public class Connection {
         str = currentLine.split(" ");
         Channel msg_channel = ChannelsData.getChannel(str[2].startsWith("#") ? str[2].substring(1) : str[2]);
         String msg_msg = currentLine.substring((str[0].length() + str[1].length() + str[2].length() + 4), currentLine.length());
-        LOG.log(Level.INFO, "Channel Details : " + msg_channel + " ||| User : " + msg_user + " ||| Messsage : " + msg_msg);
+        //LOG.log(Level.INFO, "Channel Details : " + msg_channel + " ||| User : " + msg_user + " ||| Messsage : " + msg_msg);
         if (msg_msg.startsWith("!")){
             processCommand(msg_user, msg_channel, msg_msg.substring(1));
         }
@@ -176,11 +194,6 @@ public class Connection {
 	{
         twitchData.addTwitchMessage(user, channel, message, System.currentTimeMillis());
 	}
-
-    // private void processHost(User hoster, Channel hosted)
-	// {
-	
-	// }
 
     public String getUserBroadcasterId(String name) throws Exception{
         String response = apiHandler.setPath(PATH.GET_USERS).setParams(new JSONObject().put("login", name)).setHeaders(new JSONObject().put("set_client_id", "Client-Id")).GET();
@@ -201,7 +214,7 @@ public class Connection {
     }
 
     public JSONArray getTwitchAnalysisOfAChannel(String channelName){
-        return twitchData.getTwitchAnalysisOfAChannel(ChannelsData.getChannel(channelName));
+        return twitchData.getTwitchAnalysisOfAChannel(ChannelsData.getChannel(channelName), true);
     }
 
     public List<HashMap<String, Object>> getAllChannels(){
