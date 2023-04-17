@@ -27,6 +27,7 @@ public class TwitchAnalysis {
         this.id = id;
     }
 
+    @DynamoDBAttribute(attributeName="twitchChannelPk")
     public Long getTwitchChannelPk() {
      return twitchChannelPk;
      }
