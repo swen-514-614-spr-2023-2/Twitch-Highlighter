@@ -122,6 +122,8 @@ public class ScheduleTwitchLogic {
                 List<TwitchAnalysis> twitchAnalysis = twitchData.getTwitchAnalysisRawDataOfAChannel(channel,
                         false);
                         LOG.log(Level.INFO,"twitchAnalysis ::: " + twitchAnalysis);
+                        LOG.log(Level.INFO,"coolDownMillis ::: " + coolDownMillis);
+                        LOG.log(Level.INFO,"tillTimeStamp ::: " + tillTimeStamp);
                 if (!twitchAnalysis.isEmpty()
                         && (twitchAnalysis.get(0).getTimestamp() + coolDownMillis) > tillTimeStamp) {
                     LOG.log(Level.INFO,
@@ -166,9 +168,9 @@ public class ScheduleTwitchLogic {
     }
 
     public Long getThresholdValueBasedOnChannel(Channel channel) throws Exception {
-        if(TwitchData.isAwsEnvironment() && channel.getChannelName().equals("shroud")){
-            return 1l;
-        }
+        // if(TwitchData.isAwsEnvironment() && channel.getChannelName().equals("shroud")){
+        //     return 1l;
+        // }
         List<MessagesCount> msgCountData = twitchData.getMessageCountDataOfAChannel(channel);
         Long thresholdValue = -1l;
         if (!msgCountData.isEmpty()) {
