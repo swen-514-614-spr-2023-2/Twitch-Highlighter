@@ -79,7 +79,7 @@ public class TwitchAWS_DynamoDB {
     }
 
     private void makeConnectionToDynamoDB(List<String> dynamoDbNames) {
-        LOG.log(Level.INFO, "Cloud Credentials ::: " + getCloudCredentialsFromAWS().toString());
+        LOG.log(Level.SEVERE, "Cloud Credentials ::: " + getCloudCredentialsFromAWS().toString());
         com.amazonaws.regions.Regions region = Regions.US_EAST_1;
         
         JSONObject credentials = this.getCloudCredentialsFromAWS();
@@ -126,7 +126,8 @@ public class TwitchAWS_DynamoDB {
                 }
 
             } catch (AmazonServiceException ex) {
-                LOG.log(Level.SEVERE, "Exception in fetching tables ::: ", ex.getMessage());
+                LOG.log(Level.SEVERE, "Exception in fetching tables ::: "+ ex.getMessage());
+                more_tables = false;
             }
         }
         if (!dynamoDbNames.isEmpty()) {
