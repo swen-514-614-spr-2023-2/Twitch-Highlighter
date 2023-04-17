@@ -166,7 +166,7 @@ public class ScheduleTwitchLogic {
     }
 
     public Long getThresholdValueBasedOnChannel(Channel channel) throws Exception {
-        if(TwitchData.isAwsEnvironment() && channel.getChannelName().equals("jerma985")){
+        if(TwitchData.isAwsEnvironment() && channel.getChannelName().equals("shroud")){
             return 1l;
         }
         List<MessagesCount> msgCountData = twitchData.getMessageCountDataOfAChannel(channel);
