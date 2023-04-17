@@ -116,8 +116,12 @@ public class ScheduleTwitchLogic {
                 LOG.log(Level.INFO, "Channel {0} Start Time {1} is under offsetValue {2} for timestamp {3}",
                         new Object[] { channel.getChannelName(), startedAt, offsetMillis, tillTimeStamp });
             }else if (messages.length() >= thresholdValue) {
+                LOG.log(Level.INFO,"threshold exceeded for ::: " + channel.getChannelName());
+                LOG.log(Level.INFO,"MessageLength for ::: " + messages.length());
+                LOG.log(Level.INFO,"thresholdValue ::: " + thresholdValue);
                 List<TwitchAnalysis> twitchAnalysis = twitchData.getTwitchAnalysisRawDataOfAChannel(channel,
                         false);
+                        LOG.log(Level.INFO,"twitchAnalysis ::: " + twitchAnalysis);
                 if (!twitchAnalysis.isEmpty()
                         && (twitchAnalysis.get(0).getTimestamp() + coolDownMillis) > tillTimeStamp) {
                     LOG.log(Level.INFO,
@@ -127,7 +131,9 @@ public class ScheduleTwitchLogic {
                     return;
                 }
                 String sentimental_result = awsSentimentalAnalysis(messageMerge(messages));
+                LOG.log(Level.INFO,"sentimental_result ::: " + sentimental_result);
                 JSONObject clips = awsClipsGeneration(channel);
+                LOG.log(Level.INFO,"clips ::: " + clips);
                 //awsTranscribeConversion(clips.get("video_url").toString(), channel);
                 twitchData.addTwitchAnalysis(channel, sentimental_result, clips, System.currentTimeMillis());
             }
