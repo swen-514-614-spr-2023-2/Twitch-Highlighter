@@ -152,6 +152,8 @@ public class TwitchAWS_DynamoDB {
     }
 
     private JSONObject getCloudCredentialsFromAWS() {
+        LOG.log(Level.INFO,"Access Id ::: " + System.getenv("AWS_ACCESS_ID"));
+        LOG.log(Level.INFO,"Access Key ::: " + System.getenv("AWS_ACCESS_KEY"));
         return new JSONObject().put("access_key", System.getenv("AWS_ACCESS_ID")).put("access_id", System.getenv("AWS_ACCESS_KEY"));
     }
 
