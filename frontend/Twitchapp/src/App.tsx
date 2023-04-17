@@ -21,8 +21,9 @@ function App() {
       <GridItem area="main">
         <Router>
           <Routes>
-            {localStorage.getItem("isLogIn") && <Route path="/" element={<ChannelGrid searchText={searchText} />} />}
-            {!localStorage.getItem("isLogIn") && <Route path="/" element={<Login />} />}
+            {/* {localStorage.getItem("isLogIn") && <Route path="/" element={<ChannelGrid searchText={searchText} />} />}
+            {!localStorage.getItem("isLogIn") && <Route path="/" element={<Login />} />} */}
+            <Route path="/" element={<ChannelGrid searchText={searchText} />} />
             <Route path="/:channel_name/clips" element={<Clips />} />
             <Route path="/register" element={<Register />} />
           </Routes>
