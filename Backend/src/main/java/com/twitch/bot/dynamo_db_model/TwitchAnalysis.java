@@ -70,6 +70,10 @@ public class TwitchAnalysis {
             this.clip_details = clip_details;
         }
         private String clip_details;
+
+        public SentimentalData(){
+            
+        }
     }
 
 }
