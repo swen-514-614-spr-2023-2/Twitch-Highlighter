@@ -6,10 +6,10 @@ import ChannelGrid from "./components/ChannelGrid";
 import Clips from "./components/Clips";
 import NavBar from "./components/NavBar";
 import Register from "./components/Register";
+import Login from "./components/Login";
 
 function App() {
   const [searchText, setSearchText] = useState("");
-
   const handleSearch = (text: string) => {
     setSearchText(text);
   };
@@ -21,7 +21,8 @@ function App() {
       <GridItem area="main">
         <Router>
           <Routes>
-            <Route path="/" element={<ChannelGrid searchText={searchText} />} />
+            {localStorage.getItem("isLogIn") && <Route path="/" element={<ChannelGrid searchText={searchText} />} />}
+            {!localStorage.getItem("isLogIn") && <Route path="/" element={<Login />} />}
             <Route path="/:channel_name/clips" element={<Clips />} />
             <Route path="/register" element={<Register />} />
           </Routes>

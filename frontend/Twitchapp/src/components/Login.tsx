@@ -19,7 +19,7 @@ const Login = () => {
           <form>
             <FormControl>
               <FormLabel htmlFor="username">UserName</FormLabel>
-              <Input id="username" type={"text"} placeholder="UserName" />
+              <Input id="username" type={"text"} placeholder="Username" />
             </FormControl>
             <FormControl>
               <FormLabel htmlFor="password">Password</FormLabel>
