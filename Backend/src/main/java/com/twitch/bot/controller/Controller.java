@@ -34,11 +34,12 @@ public class Controller {
     public Controller(ChannelsData channelsData, Connection twitch_connection, Users users) throws Exception{
         this.twitch_connection = twitch_connection;
         this.users = users;
+        responseHeaders.add("Access-Control-Allow-Origin", "*");
     }
 
     @GetMapping("/channels")
     public ResponseEntity<Object> getTwitchChannels() throws Exception {
-        return new ResponseEntity<>(twitch_connection.getAllChannels(), HttpStatus.OK);
+        return new ResponseEntity<>(twitch_connection.getAllChannels(), responseHeaders, HttpStatus.OK);
     }
 
     @GetMapping("/twitch_analysis")
@@ -46,24 +47,24 @@ public class Controller {
         HashMap<String, Object> response = new HashMap<>();
         response.put("twitch_analysis", twitch_connection.getTwitchAnalysisOfAChannel(channelName).toList().stream().map(m -> ((HashMap<String, Object>) m)).collect(Collectors.toList()));
         response.put("channel_name", channelName);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(response, responseHeaders, HttpStatus.OK);
     }
 
     @GetMapping("/channel_broadcastId")
     public ResponseEntity<Object> getChannelBroadcastId(@RequestParam("channel_name") String channelName) throws Exception {
-        return new ResponseEntity<>(twitch_connection.getUserBroadcasterId(channelName), HttpStatus.OK);
+        return new ResponseEntity<>(twitch_connection.getUserBroadcasterId(channelName), responseHeaders, HttpStatus.OK);
     }
 
     @PostMapping("/addChannel")
     public ResponseEntity<Object> subscribeChannel(@RequestParam("channel_name") String channelName) throws Exception {
         twitch_connection.addAndJoinChannel(channelName);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(responseHeaders, HttpStatus.OK);
     }
 
     @DeleteMapping("/removeChannel")
     public ResponseEntity<Object> unSubscribeChannel(@RequestParam("channel_name") String channelName) throws Exception {
         twitch_connection.removeAndDeleteChannelData(channelName);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(responseHeaders, HttpStatus.OK);
     }
 
     @PostMapping("user/authenticate")
@@ -86,19 +87,19 @@ public class Controller {
                 response.put("user_name", user.getName());
                 response.put("email", user.getEmail());
                 response.put("user_id", user.getUserId());
-                return new ResponseEntity<>(response, HttpStatus.OK);
+                return new ResponseEntity<>(response, responseHeaders, HttpStatus.OK);
             } else {
-                return  new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                return  new ResponseEntity<>(responseHeaders, HttpStatus.NOT_FOUND);
             }
 
             
 
         } catch (IllegalArgumentException ex) {
             LOG.log(Level.SEVERE, "INVALID_BODY");
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(responseHeaders, HttpStatus.BAD_REQUEST);
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, ex.getLocalizedMessage());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -119,16 +120,16 @@ public class Controller {
             response.put("user_name", user.getName());
             response.put("email", user.getEmail());
             response.put("user_id", user.getUserId());
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return new ResponseEntity<>(response, responseHeaders, HttpStatus.OK);
         } catch (IllegalArgumentException ex) {
             LOG.log(Level.SEVERE, "INVALID_BODY");
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(responseHeaders, HttpStatus.BAD_REQUEST);
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, ex.getLocalizedMessage());
             if (ex.getMessage() != null && ex.getMessage().equals("User Already Present")) {
-                return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+                return new ResponseEntity<>(responseHeaders, HttpStatus.NOT_ACCEPTABLE);
             } else {
-                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<>(responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
     }
@@ -139,13 +140,13 @@ public class Controller {
             Boolean isValidUser = users.authenticateUser(Integer.parseInt(userId.toString()));
             if (isValidUser) {
                 User user = users.getUserDetails(Integer.parseInt(userId.toString()));
-                return new ResponseEntity<>(users.getUserSubscriptions(user), HttpStatus.OK);
+                return new ResponseEntity<>(users.getUserSubscriptions(user),responseHeaders, HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(responseHeaders, HttpStatus.NOT_FOUND);
             }
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, ex.getLocalizedMessage());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -154,13 +155,13 @@ public class Controller {
         try {
             Subscriptions subscription = users.checkAndAddUserSubscriptions(Integer.parseInt(channelId.toString()), Integer.parseInt(channelId));
             if(subscription != null){
-                return new ResponseEntity<>(subscription, HttpStatus.OK);
+                return new ResponseEntity<>(subscription, responseHeaders, HttpStatus.OK);
             }else{
-                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>(responseHeaders, HttpStatus.UNAUTHORIZED);
             }
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, ex.getLocalizedMessage());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
