@@ -12,9 +12,9 @@ import React, { useState } from "react";
 import { Link as RouteLink } from "react-router-dom";
 
 function Register(){
-  [email, setEmail] = useState("");
-  [username, setUsername] = useState("");
-  [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
   
   const registerUser = () => {
