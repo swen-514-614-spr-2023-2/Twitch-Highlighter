@@ -83,7 +83,7 @@ public class ScheduleTwitchLogic {
             }else{
                 twitchData.deleteTwitchMessageForChannel(channel, currentTime);
             }
-            channelTiming = (channelTiming.trim() == "") ? channel.getChannelName() + " - " + (System.currentTimeMillis() - startTime) : ", " + channel.getChannelName() + " - " + (System.currentTimeMillis() - startTime);
+            channelTiming += (channelTiming.trim() == "") ? channel.getChannelName() + " - " + (System.currentTimeMillis() - startTime) : ", " + channel.getChannelName() + " - " + (System.currentTimeMillis() - startTime);
         }
         LOG.log(Level.INFO, "Scheduler Run Time ::: " + channelTiming);
     }
