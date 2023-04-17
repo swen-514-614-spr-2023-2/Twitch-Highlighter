@@ -307,7 +307,7 @@ public class ScheduleTwitchLogic {
         JSONObject responseData = new JSONObject(response);
         LOG.log(Level.INFO,"CLIPS:::responseData in clips 1 ::: " + responseData);
         String clip_id = responseData.getJSONArray("data").getJSONObject(0).getString("id");
-        Thread.sleep(500);//*Thread Sleeps so that the create clip is done generating on twitch side */
+        Thread.sleep(1000);//*Thread Sleeps so that the create clip is done generating on twitch side */
         response = apiHandler.setPath(PATH.CLIPS).setParams(new JSONObject().put("id", clip_id)).setHeaders(new JSONObject().put("set_client_id", "Client-Id")).GET();
         responseData = new JSONObject(response);
         LOG.log(Level.INFO,"CLIPS:::responseData in clips 2 ::: " + responseData);
