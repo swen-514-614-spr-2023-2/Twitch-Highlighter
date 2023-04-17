@@ -83,9 +83,11 @@ public class TwitchAWS_DynamoDB {
         com.amazonaws.regions.Regions region = Regions.US_EAST_1;
         
         JSONObject credentials = this.getCloudCredentialsFromAWS();
-        
-        System.setProperty("aws.accessKeyId", credentials.get("access_id").toString());
-        System.setProperty("aws.secretKey", credentials.get("access_key").toString());
+
+        if(!credentials.isEmpty()){
+            System.setProperty("aws.accessKeyId", credentials.get("access_id").toString());
+            System.setProperty("aws.secretKey", credentials.get("access_key").toString());
+        }
 
         dynamoDb =AmazonDynamoDBClientBuilder.standard().withCredentials(new DefaultAWSCredentialsProviderChain()).withRegion(region)
         .build();
@@ -151,7 +153,7 @@ public class TwitchAWS_DynamoDB {
         }   
     }
 
-    private JSONObject getCloudCredentialsFromAWS() {
+    protected JSONObject getCloudCredentialsFromAWS() {
         LOG.log(Level.INFO,"Access Id ::: " + System.getenv("AWS_ACCESS_ID"));
         LOG.log(Level.INFO,"Access Key ::: " + System.getenv("AWS_ACCESS_KEY"));
         return new JSONObject().put("access_key", System.getenv("AWS_ACCESS_ID")).put("access_id", System.getenv("AWS_ACCESS_KEY"));

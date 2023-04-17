@@ -253,7 +253,7 @@ public class TwitchData {
     }
 
     private JSONObject getCloudCredentialsFromAWS() {
-        return new JSONObject().put("access_key", System.getenv("AWS_ACCESS_ID")).put("access_id", System.getenv("AWS_ACCESS_KEY"));
+        return twitchDynamoDB.getCloudCredentialsFromAWS();
     }
 
     public void addMessageCountBasedOnRollingWindow(Channel channel, Long messageCount, Long timestamp) {
