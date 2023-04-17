@@ -302,12 +302,18 @@ public class TwitchAWS_DynamoDB {
         Map<String, AttributeValue> expressionValue = new HashMap<String, AttributeValue>();
         expression += "twitch_channel_pk = :v1";
         expressionValue.put(":v1", new AttributeValue().withN(channel.getId().toString()));
+        LOG.log(Level.INFO, "TwitchAnaylsis/ channel Name :::" + channel.getChannelName());
+        LOG.log(Level.INFO, "TwitchAnaylsis/ channel Id :::" + channel.getId());
 
         DynamoDBScanExpression queryExpression = new DynamoDBScanExpression()
                 .withFilterExpression(expression)
                 .withExpressionAttributeValues(expressionValue);
 
+                LOG.log(Level.INFO, "TwitchAnaylsis/ queryExpression :::" + queryExpression);
+
         PaginatedScanList<TwitchAnalysis> result = mapper.scan(TwitchAnalysis.class, queryExpression);
+
+        LOG.log(Level.INFO, "TwitchAnaylsis/ result :::" + result);
 
         result.loadAllResults();
         List<TwitchAnalysis> data = new ArrayList<TwitchAnalysis>(result.size());

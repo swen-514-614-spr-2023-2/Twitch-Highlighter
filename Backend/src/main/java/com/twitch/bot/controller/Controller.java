@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import org.json.JSONArray;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +46,9 @@ public class Controller {
     @GetMapping("/twitch_analysis")
     public ResponseEntity<Object> getTwitchAnalysisData(@RequestParam("channel_name") String channelName) throws Exception {
         HashMap<String, Object> response = new HashMap<>();
-        response.put("twitch_analysis", twitch_connection.getTwitchAnalysisOfAChannel(channelName).toList().stream().map(m -> ((HashMap<String, Object>) m)).collect(Collectors.toList()));
+        JSONArray result = twitch_connection.getTwitchAnalysisOfAChannel(channelName);
+        LOG.log(Level.INFO, "result :::" + result);
+        response.put("twitch_analysis", result.toList().stream().map(m -> ((HashMap<String, Object>) m)).collect(Collectors.toList()));
         response.put("channel_name", channelName);
         return new ResponseEntity<>(response, responseHeaders, HttpStatus.OK);
     }
