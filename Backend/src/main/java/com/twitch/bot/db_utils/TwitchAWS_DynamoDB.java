@@ -300,7 +300,7 @@ public class TwitchAWS_DynamoDB {
         DynamoDBMapper mapper = new DynamoDBMapper(dynamoDb);
         String expression = "";
         Map<String, AttributeValue> expressionValue = new HashMap<String, AttributeValue>();
-        expression += "twitch_channel_pk = :v1";
+        expression += "twitchChannelPk = :v1";
         expressionValue.put(":v1", new AttributeValue().withN(channel.getId().toString()));
         LOG.log(Level.INFO, "TwitchAnaylsis/ channel Name :::" + channel.getChannelName());
         LOG.log(Level.INFO, "TwitchAnaylsis/ channel Id :::" + channel.getId());
