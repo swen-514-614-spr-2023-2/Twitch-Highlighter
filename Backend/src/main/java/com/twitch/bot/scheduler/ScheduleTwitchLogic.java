@@ -305,16 +305,19 @@ public class ScheduleTwitchLogic {
         JSONObject data = new JSONObject();
         String response = apiHandler.setPath(PATH.CLIPS).setParams(new JSONObject().put("broadcaster_id", channel.getTwitchId())).setHeaders(new JSONObject().put("set_client_id", "Client-Id")).POST();
         JSONObject responseData = new JSONObject(response);
+        LOG.log(Level.INFO,"CLIPS:::responseData in clips 1 ::: " + responseData);
         String clip_id = responseData.getJSONArray("data").getJSONObject(0).getString("id");
         Thread.sleep(500);//*Thread Sleeps so that the create clip is done generating on twitch side */
         response = apiHandler.setPath(PATH.CLIPS).setParams(new JSONObject().put("id", clip_id)).setHeaders(new JSONObject().put("set_client_id", "Client-Id")).GET();
         responseData = new JSONObject(response);
+        LOG.log(Level.INFO,"CLIPS:::responseData in clips 2 ::: " + responseData);
         responseData = responseData.getJSONArray("data").getJSONObject(0);
         data.put("clip_id", clip_id);
         data.put("video_url", responseData.get("url").toString());
         data.put("embed_url", responseData.get("embed_url").toString());
         data.put("created_at", responseData.get("created_at").toString());
         data.put("thumbnail_url", responseData.get("thumbnail_url").toString()); 
+        LOG.log(Level.INFO,"CLIPS:::data in clips 3 ::: " + data);
         return data;
     }
 }
