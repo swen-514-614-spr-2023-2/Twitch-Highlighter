@@ -41,6 +41,7 @@ import com.twitch.bot.api.ApiHandler.PATH;
 import com.twitch.bot.db_utils.TwitchData;
 import com.twitch.bot.dynamo_db_model.MessagesCount;
 import com.twitch.bot.dynamo_db_model.TwitchAnalysis;
+import com.twitch.bot.dynamo_db_model.TwitchAnalysis.ClipsDetails;
 import com.twitch.bot.model.Channel;
 import com.twitch.bot.twitch_connection.ChannelsData;
 
@@ -132,12 +133,14 @@ public class ScheduleTwitchLogic {
                     twitchData.deleteTwitchMessageForChannel(channel, tillTimeStamp);
                     return;
                 }
-                String sentimental_result = awsSentimentalAnalysis(messageMerge(messages));
-                LOG.log(Level.INFO,"sentimental_result ::: " + sentimental_result);
-                JSONObject clips = awsClipsGeneration(channel);
-                LOG.log(Level.INFO,"clips ::: " + clips);
-                //awsTranscribeConversion(clips.get("video_url").toString(), channel);
-                twitchData.addTwitchAnalysis(channel, sentimental_result, clips, System.currentTimeMillis());
+                ClipsDetails clips = awsClipsGeneration(channel);
+                if(clips != null){
+                    LOG.log(Level.INFO,"clips ::: " + clips);
+                    String sentimental_result = awsSentimentalAnalysis(messageMerge(messages));
+                    LOG.log(Level.INFO,"sentimental_result ::: " + sentimental_result);
+                    //awsTranscribeConversion(clips.get("video_url").toString(), channel);
+                    twitchData.addTwitchAnalysis(channel, sentimental_result, clips, System.currentTimeMillis());
+                }              
             }
             twitchData.deleteTwitchMessageForChannel(channel, tillTimeStamp);
         } else {
@@ -303,11 +306,15 @@ public class ScheduleTwitchLogic {
         return messagesStr;
     }
 
-    public JSONObject awsClipsGeneration(Channel channel) throws Exception{
+    public ClipsDetails awsClipsGeneration(Channel channel) throws Exception{
         JSONObject data = new JSONObject();
         String response = apiHandler.setPath(PATH.CLIPS).setParams(new JSONObject().put("broadcaster_id", channel.getTwitchId())).setHeaders(new JSONObject().put("set_client_id", "Client-Id")).POST();
         JSONObject responseData = new JSONObject(response);
         LOG.log(Level.INFO,"CLIPS:::responseData in clips 1 ::: " + responseData);
+        if(!responseData.has("data")){
+            LOG.log(Level.SEVERE, "Clips Generation Issue for Channel ::: {0} ::: Response ::: {1}", new Object[]{channel.getChannelName(), responseData});
+            return null;
+        }
         String clip_id = responseData.getJSONArray("data").getJSONObject(0).getString("id");
         LOG.log(Level.INFO,"CLIPS:::clip_id in clips 1.1 ::: " + clip_id);
         Thread.sleep(5000);//*Thread Sleeps so that the create clip is done generating on twitch side */
@@ -315,12 +322,18 @@ public class ScheduleTwitchLogic {
         responseData = new JSONObject(response);
         LOG.log(Level.INFO,"CLIPS:::responseData in clips 2 ::: " + responseData);
         responseData = responseData.getJSONArray("data").getJSONObject(0);
+        ClipsDetails clipsDetails = new ClipsDetails();
+        clipsDetails.setClip_id(clip_id);
+        clipsDetails.setVideo_url(responseData.get("url").toString());
+        clipsDetails.setEmbed_url(responseData.get("embed_url").toString());
+        clipsDetails.setThumbnail_url(responseData.get("thumbnail_url").toString());
+        clipsDetails.setCreated_at(responseData.get("created_at").toString());
         data.put("clip_id", clip_id);
         data.put("video_url", responseData.get("url").toString());
         data.put("embed_url", responseData.get("embed_url").toString());
         data.put("created_at", responseData.get("created_at").toString());
         data.put("thumbnail_url", responseData.get("thumbnail_url").toString()); 
-        LOG.log(Level.INFO,"CLIPS:::data in clips 3 ::: " + data);
-        return data;
+        LOG.log(Level.INFO,"CLIPS:::data in clips 3 ::: " + clipsDetails.toString());
+        return clipsDetails;
     }
 }

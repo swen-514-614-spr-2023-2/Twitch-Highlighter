@@ -23,3 +23,27 @@ export const getTwitchAnalysisOfChannel = async (channel_name: any) => {
    })
    return response.data;
 }
+
+export const logIn = async (name: any, password: any, isUserName: Boolean) => {
+  let username, email;
+  if(isUserName){
+    username = name;
+  }else{
+    email = name;
+  }
+  const response = await axios.post(domain + "/user/authenticate", {
+    username,
+    email,
+    password
+  })
+  debugger;
+  return response.data;
+}
+
+export const register =  (username: any, password: any, email: any) => {
+    return axios.post(domain + "/user/register", {
+      username,
+      email,
+      password
+    })
+}

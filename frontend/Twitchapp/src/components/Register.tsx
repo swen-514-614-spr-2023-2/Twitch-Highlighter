@@ -9,17 +9,44 @@ import {
   Stack,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { Link as RouteLink } from "react-router-dom";
+import { Link as RouteLink, useNavigate } from "react-router-dom";
+import { AlertTypes } from "../App";
+import { registerUser } from "../services/session";
+import '../App.css';
 
-function Register(){
+function Register({showAlertMessage}: any){
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
+  const backToLogin = () => {
+    navigate("/login");
+  }
   
-  const registerUser = () => {
-    debugger;
-    console.log(email + "   " + username + "  " + password);
+  const register = () => {
+    let emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    if(username.trim() === ""){
+      showAlertMessage("Empty Username", AlertTypes.ERROR, 2500);
+      return;
+    }
+    if(password.trim() === ""){
+      showAlertMessage("Empty Password", AlertTypes.ERROR, 2500);
+      return;
+    }
+    if(email.trim() === ""){
+      showAlertMessage("Empty Email Address", AlertTypes.ERROR, 2500);
+      return;
+    }
+    
+    if(!emailRegex.test(email)){
+      showAlertMessage("Invalid Email Address", AlertTypes.ERROR, 2500);
+    }else{
+      let isUserRegistered = registerUser(username, password, email);
+      if(isUserRegistered){
+        navigate("/login");
+      }
+    }
   };
 
   const setData = (event: any, type: number) => {
@@ -39,17 +66,18 @@ function Register(){
           <form>
             <FormControl>
               <FormLabel htmlFor="email">Email</FormLabel>
-              <Input id="email" type={"text"} value={email} onChange={e => setData(e, 1)} placeholder="Email" />
+              <Input id="email" type={"email"} value={email} onChange={e => setData(e, 1)} placeholder="Email" />
             </FormControl>
             <FormControl>
-              <FormLabel htmlFor="username">UserName</FormLabel>
+              <FormLabel htmlFor="username">Username</FormLabel>
               <Input id="username" type={"text"} value={username} onChange={e => setData(e, 2)} placeholder="Username" />
             </FormControl>
             <FormControl>
               <FormLabel htmlFor="password">Password</FormLabel>
               <Input id="password" type={"password"} value={password} onChange={e => setData(e, 0)} placeholder="*******" />
             </FormControl>
-            <Button onClick={registerUser}>Register</Button>
+            <Button className="mB10 mT10 mR10" onClick={register}>Register</Button>
+            <Button className="mB10 mT10" onClick={backToLogin}>Back to Login</Button>
           </form>
         </Box>
       </Stack>

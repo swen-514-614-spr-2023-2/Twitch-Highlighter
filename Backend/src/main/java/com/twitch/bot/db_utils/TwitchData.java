@@ -29,6 +29,7 @@ import com.mongodb.client.model.Updates;
 import com.twitch.bot.dynamo_db_model.Messages;
 import com.twitch.bot.dynamo_db_model.MessagesCount;
 import com.twitch.bot.dynamo_db_model.TwitchAnalysis;
+import com.twitch.bot.dynamo_db_model.TwitchAnalysis.ClipsDetails;
 import com.twitch.bot.model.Channel;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -241,7 +242,7 @@ public class TwitchData {
         return twitchDynamoDB.getTwitchAnalysisOfAChannelInJSON(channel, isAscendingOrder);
     }
 
-    public void addTwitchAnalysis(Channel channel, String sentimental_result, JSONObject clip_details, Long timeStamp) {
+    public void addTwitchAnalysis(Channel channel, String sentimental_result, ClipsDetails clip_details, Long timeStamp) {
         if(timeStamp == null){
             timeStamp = System.currentTimeMillis();
         }

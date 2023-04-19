@@ -562,7 +562,7 @@ public class TwitchAWS_RDSConnection {
         return columnNames;
     }
 
-    private String addStringLiteralToString(String data){
+    public String addStringLiteralToString(String data){
         return "'" + data + "'";
     }
 }

@@ -35,11 +35,26 @@ public class TwitchAWS_RDS {
     public User getUserDetails(String emailOrName, String password, Boolean isName) throws Exception{
         String filterCondition = "";
         if(isName){
-            filterCondition = USERS.COLUMN_NAME.toString() + " = " + emailOrName;
+            filterCondition = USERS.COLUMN_NAME.toString() + " = " + rdsConnection.addStringLiteralToString(emailOrName);
         }else{
-            filterCondition = USERS.COLUMN_EMAIL.toString() + " = " + emailOrName;
+            filterCondition = USERS.COLUMN_EMAIL.toString() + " = " + rdsConnection.addStringLiteralToString(emailOrName);
         }
-        filterCondition += " " + TwitchAWS_RDSConnection.AND + " " + USERS.COLUMN_PASSWORD.toString() + " = " + password;
+        filterCondition += " " + TwitchAWS_RDSConnection.AND + " " + USERS.COLUMN_PASSWORD.toString() + " = " + rdsConnection.addStringLiteralToString(password);
+
+        ResultSet result = rdsConnection.getUsersRecordBasedOnCriteria(rdsConnection.getAllUsersColumns(), filterCondition);
+        while(result.next()){
+            return getUserObjectFromResultSet(result);
+        }
+        return null;
+    }
+
+    public User getUserDetails(String emailOrName, Boolean isName) throws Exception{
+        String filterCondition = "";
+        if(isName){
+            filterCondition = USERS.COLUMN_NAME.toString() + " = " + rdsConnection.addStringLiteralToString(emailOrName);
+        }else{
+            filterCondition = USERS.COLUMN_EMAIL.toString() + " = " + rdsConnection.addStringLiteralToString(emailOrName);
+        }
 
         ResultSet result = rdsConnection.getUsersRecordBasedOnCriteria(rdsConnection.getAllUsersColumns(), filterCondition);
         while(result.next()){
@@ -185,7 +200,7 @@ public class TwitchAWS_RDS {
     public Channel getChannelDetails(String channelName, String twitchId) throws Exception{
         String filterCondition = "";
         if(ifGivenObjectIsValid(channelName)){
-            filterCondition = TWITCH_STREAMERS.COLUMN_NAME + " = " + channelName;
+            filterCondition = TWITCH_STREAMERS.COLUMN_NAME + " = " + rdsConnection.addStringLiteralToString(channelName);
         }
         if(ifGivenObjectIsValid(twitchId)){
             if(filterCondition.trim() != ""){

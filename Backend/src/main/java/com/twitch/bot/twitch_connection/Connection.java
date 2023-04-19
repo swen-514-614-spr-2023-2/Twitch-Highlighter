@@ -16,9 +16,13 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.twitch.bot.api.ApiHandler;
 import com.twitch.bot.api.ApiHandler.PATH;
 import com.twitch.bot.db_utils.TwitchData;
+import com.twitch.bot.dynamo_db_model.TwitchAnalysis;
+import com.twitch.bot.dynamo_db_model.TwitchAnalysis.SentimentalData;
 import com.twitch.bot.model.Channel;
 
 @Component
@@ -49,14 +53,16 @@ public class Connection {
         this.connect();
         HashMap<String, Channel> channels = ChannelsData.getChannels();
         if(channels.isEmpty()){
+            LOG.log(Level.INFO, "Channels Empty");
             String[] channelNamesArr = channelNames.split(",");
             populateMandatoryChannels(Arrays.asList(channelNamesArr));
-        }
-        Iterator<String> channelsIter = channels.keySet().iterator();
-        while(channelsIter.hasNext()){
-            Channel channel = channels.get(channelsIter.next());
-            this.joinChannel(channel.getChannelName());
-        }
+        }else{
+            Iterator<String> channelsIter = channels.keySet().iterator();
+            while(channelsIter.hasNext()){
+                Channel channel = channels.get(channelsIter.next());
+                this.joinChannel(channel.getChannelName());
+            }
+        }     
     }
 
     private void populateMandatoryChannels(List<String> channelNames) throws Exception{
@@ -151,10 +157,10 @@ public class Connection {
                 } else if (currentLine.contains("PRIVMSG")) {
                     processMessage(currentLine);
                 } else if (currentLine.toLowerCase().contains("disconnected")) {
-                    LOG.log(Level.INFO, currentLine);
+                    //LOG.log(Level.INFO, currentLine);
                     apiHandler.CONNECT();
                 } else {
-                    LOG.log(Level.INFO, currentLine);
+                    //LOG.log(Level.INFO, currentLine);
                 }
             }
         } catch (Exception ex) {
@@ -213,8 +219,24 @@ public class Connection {
         LOG.log(Level.INFO, "response :::: " + response);
     }
 
-    public JSONArray getTwitchAnalysisOfAChannel(String channelName){
+    public JSONArray getTwitchAnalysisOfAChannelInJSON(String channelName){
         return twitchData.getTwitchAnalysisOfAChannel(ChannelsData.getChannel(channelName), true);
+    }
+
+    public List<HashMap<String,Object>> getTwitchAnalysisOfAChannelInListOfHashmap(String channelName){
+        JSONArray data = twitchData.getTwitchAnalysisOfAChannel(ChannelsData.getChannel(channelName), true);
+        Iterator<Object> dataIter = data.iterator();
+        List<HashMap<String,Object>> result = new ArrayList<>();
+        while(dataIter.hasNext()){
+            SentimentalData value = (SentimentalData)dataIter.next();
+            HashMap<String,Object> sentimentalData = new ObjectMapper().convertValue(value, new TypeReference<HashMap<String, Object>>(){});
+            result.add(sentimentalData);
+        }
+        return result;
+    }
+
+    public List<TwitchAnalysis> getTwitchAnalysisOfAChannel(String channelName){
+        return twitchData.getTwitchAnalysisRawDataOfAChannel(ChannelsData.getChannel(channelName), true);
     }
 
     public List<HashMap<String, Object>> getAllChannels(){

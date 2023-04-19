@@ -55,24 +55,83 @@ public class TwitchAnalysis {
     }
 
     @DynamoDBDocument
-    public class SentimentalData{
+    public static class SentimentalData{
         private String sentimental_analysis;
+        private ClipsDetails clip_details;
+
         public String getSentimental_analysis() {
             return sentimental_analysis;
         }
         public void setSentimental_analysis(String sentimental_analysis) {
             this.sentimental_analysis = sentimental_analysis;
         }
-        public String getClip_details() {
+        public ClipsDetails getClip_details() {
             return clip_details;
         }
-        public void setClip_details(String clip_details) {
+        public void setClip_details(ClipsDetails clip_details) {
             this.clip_details = clip_details;
         }
-        private String clip_details;
 
         public SentimentalData(){
             
+        }
+    }
+
+    @DynamoDBDocument
+    public static class ClipsDetails{
+        String clip_id;
+        String video_url;
+        String embed_url;
+        String created_at;
+        String thumbnail_url;
+
+        public String getClip_id() {
+            return clip_id;
+        }
+
+        public void setClip_id(String clip_id) {
+            this.clip_id = clip_id;
+        }
+
+        public String getVideo_url() {
+            return video_url;
+        }
+
+        public void setVideo_url(String video_url) {
+            this.video_url = video_url;
+        }
+
+        public String getEmbed_url() {
+            return embed_url;
+        }
+
+        public void setEmbed_url(String embed_url) {
+            this.embed_url = embed_url;
+        }
+
+        public String getCreated_at() {
+            return created_at;
+        }
+
+        public void setCreated_at(String created_at) {
+            this.created_at = created_at;
+        }
+
+        public String getThumbnail_url() {
+            return thumbnail_url;
+        }
+
+        public void setThumbnail_url(String thumbnail_url) {
+            this.thumbnail_url = thumbnail_url;
+        }
+
+        public ClipsDetails(){
+            
+        }
+
+        @Override
+        public String toString(){
+            return "[ " + "clip_id = " + clip_id + ", video_url = " + video_url + ", embed_url = " + embed_url + ", created_at = " + created_at + ", thumbnail_url = " + thumbnail_url + " ]";
         }
     }
 

@@ -100,7 +100,7 @@ const Clips = () => {
                 </HStack>
                 {showVideo === index && (
                   <AspectRatio>
-                    <iframe src={clip.clip_details.embed_url}></iframe>
+                    <iframe src={clip?.clip_details.embed_url + "&parent=" + location}></iframe>
                   </AspectRatio>
                 )}
               </Box>

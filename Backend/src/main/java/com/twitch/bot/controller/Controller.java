@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,8 +25,9 @@ import com.twitch.bot.twitch_connection.ChannelsData;
 import com.twitch.bot.twitch_connection.Connection;
 import com.twitch.bot.twitch_connection.Users;
 
-// @CrossOrigin("http://localhost:5173/")
+@CrossOrigin("http://localhost:5173/")
 @RestController
+@RequestMapping("/")
 public class Controller {
     private static final Logger LOG = Logger.getLogger(Controller.class.getName());
     private Connection twitch_connection;
@@ -46,9 +48,7 @@ public class Controller {
     @GetMapping("/twitch_analysis")
     public ResponseEntity<Object> getTwitchAnalysisData(@RequestParam("channel_name") String channelName) throws Exception {
         HashMap<String, Object> response = new HashMap<>();
-        JSONArray result = twitch_connection.getTwitchAnalysisOfAChannel(channelName);
-        LOG.log(Level.INFO, "result :::" + result);
-        response.put("twitch_analysis", result.toList().stream().map(m -> ((HashMap<String, Object>) m)).collect(Collectors.toList()));
+        response.put("twitch_analysis", twitch_connection.getTwitchAnalysisOfAChannelInListOfHashmap(channelName));
         response.put("channel_name", channelName);
         return new ResponseEntity<>(response, responseHeaders, HttpStatus.OK);
     }
@@ -71,7 +71,7 @@ public class Controller {
     }
 
     @PostMapping("user/authenticate")
-    public ResponseEntity<Object> authenticateUser(@RequestBody HashMap<String, String> credentials) {
+    public ResponseEntity<HashMap<String, Object>> authenticateUser(@RequestBody HashMap<String, String> credentials) {
         LOG.log(Level.INFO, "POST /user/authenticate {0}", new Object[] { credentials });
         HashMap<String, Object> response = new HashMap<>();
         try {
@@ -107,7 +107,7 @@ public class Controller {
     }
 
     @PostMapping("user/register")
-    public ResponseEntity<Object> register(@RequestBody HashMap<String, String> credentials) {
+    public ResponseEntity<HashMap<String, Object>> register(@RequestBody HashMap<String, String> credentials) {
         LOG.log(Level.INFO, "POST /user/register {0}", new Object[] { credentials });
         HashMap<String, Object> response = new HashMap<>();
         try {

@@ -40,6 +40,7 @@ import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
 import com.twitch.bot.dynamo_db_model.Messages;
 import com.twitch.bot.dynamo_db_model.MessagesCount;
 import com.twitch.bot.dynamo_db_model.TwitchAnalysis;
+import com.twitch.bot.dynamo_db_model.TwitchAnalysis.ClipsDetails;
 import com.twitch.bot.dynamo_db_model.TwitchAnalysis.SentimentalData;
 import com.twitch.bot.model.Channel;
 
@@ -79,7 +80,6 @@ public class TwitchAWS_DynamoDB {
     }
 
     private void makeConnectionToDynamoDB(List<String> dynamoDbNames) {
-        LOG.log(Level.SEVERE, "Cloud Credentials ::: " + getCloudCredentialsFromAWS().toString());
         com.amazonaws.regions.Regions region = Regions.US_EAST_1;
         
         JSONObject credentials = this.getCloudCredentialsFromAWS();
@@ -155,8 +155,6 @@ public class TwitchAWS_DynamoDB {
     }
 
     protected JSONObject getCloudCredentialsFromAWS() {
-        LOG.log(Level.INFO,"Access Id ::: " + System.getenv("AWS_ACCESS_ID"));
-        LOG.log(Level.INFO,"Access Key ::: " + System.getenv("AWS_ACCESS_KEY"));
         return new JSONObject().put("access_key", System.getenv("AWS_ACCESS_ID")).put("access_id", System.getenv("AWS_ACCESS_KEY"));
     }
 
@@ -344,12 +342,12 @@ public class TwitchAWS_DynamoDB {
         return getTwitchAnalysisOfAChannel(channel, isAscending);
     }
 
-    protected void addTwitchAnalysisInDynamoDB(Channel channel, String sentimental_result, JSONObject clip_details, Long timeStamp) {
+    protected void addTwitchAnalysisInDynamoDB(Channel channel, String sentimental_result, ClipsDetails clip_details, Long timeStamp) {
         TwitchAnalysis twitchAnalysis = new TwitchAnalysis();
         try {
-            SentimentalData sentimentalData = new TwitchAnalysis().new SentimentalData();
+            SentimentalData sentimentalData = new SentimentalData();
             sentimentalData.setSentimental_analysis(sentimental_result);
-            sentimentalData.setClip_details(clip_details.toString());
+            sentimentalData.setClip_details(clip_details);
             twitchAnalysis.setSentimentalClipsCollection(sentimentalData);
             twitchAnalysis.setTwitchChannelPk(Long.valueOf(channel.getId().toString()));
             twitchAnalysis.setTimestamp(timeStamp);

@@ -21,6 +21,11 @@ public class Users {
         return (user != null);
     }
 
+    public Boolean checkIfEmailOrUserNamePresent(String name, Boolean isUserName) throws Exception{
+        User user = twitchAWS_RDS.getUserDetails(name, isUserName);
+        return (user != null);
+    }
+
     public Boolean authenticateUser(Integer userId) throws Exception{
         User user = twitchAWS_RDS.getUserDetails(userId);
         return (user != null);
@@ -35,7 +40,7 @@ public class Users {
     }
 
     public User registerUser(String username, String password, String email) throws Exception{
-        if(!authenticateUser(email, password, false)){
+        if(!checkIfEmailOrUserNamePresent(email, false)){
             return twitchAWS_RDS.addUserDetails(username, email, password);
         }else{
             throw new Exception("User Already Present");
