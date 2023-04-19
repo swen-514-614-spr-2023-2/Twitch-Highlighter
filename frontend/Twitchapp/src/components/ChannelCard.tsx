@@ -7,19 +7,20 @@ import {
   Image,
   Link,
 } from "@chakra-ui/react";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Channel } from "./ChannelGrid";
-import channelImage from "../assets/tubbo.png";
+import tubbo from "../assets/tubbo.png";
+import summit1g from "../assets/summit1g.png";
+import shroud from "../assets/shroud.png";
+import xQc from "../assets/xQc.png";
 import { Link as RouteLink } from "react-router-dom";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { subscribeChannel, unSubscribeChannel } from "../services/api-client";
 
-interface Props {
-  channel: Channel;
-}
-// { channel }: Props (goes inside())
 const ChannelCard = (channelData: any) => {
+  const subRef = useRef(null);
   const [isSubscribed, setSubscribe] = useState(channelData.channel.is_user_subscribed);
+  const [isSubscribeAPIHit, setIsSubscribeAPIHit] = useState(false);
   const subscribe = () => {
     if(!isSubscribed){
       subscribeChannel(channelData.channel.id).then(response => {
@@ -42,14 +43,11 @@ const ChannelCard = (channelData: any) => {
     }
 
   };
-
-  
   return (
     <Center>
       <Card borderRadius={10} overflow="hidden" maxW="sm" width="300px">
-        {/* <Image src={channel.imageUrl} /> */}
         <Link as={RouteLink} to={channelData.channel.channel_name + "/clips"}>
-          <Image src={channelImage} />
+          <Image src={channelData.channel.channel_name.toLowerCase()} />
         </Link>
         <CardBody>
           <HStack justifyContent={"space-between"}>
@@ -62,9 +60,15 @@ const ChannelCard = (channelData: any) => {
               </Heading>
             </Link>
             {isSubscribed && (
-              <AiFillHeart color="#ff6b81" size={20} onClick={subscribe} />
+              <button onClick={subscribe} disabled={isSubscribeAPIHit}>
+                <AiFillHeart color="#ff6b81" size={20} />
+              </button>
             )}
-            {!isSubscribed && <AiOutlineHeart size={20} onClick={subscribe} />}
+            {!isSubscribed && (
+              <button onClick={subscribe} disabled={isSubscribeAPIHit}>
+                <AiOutlineHeart size={20} onClick={subscribe} />
+              </button>
+            )}
           </HStack>
         </CardBody>
       </Card>

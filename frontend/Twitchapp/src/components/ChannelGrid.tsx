@@ -17,11 +17,10 @@ interface Props {
 const ChannelGrid = ({ searchText }: Props) => {
   const [channels, setchannel] = useState<Channel[]>([]);
   const [error, setError] = useState("");
-  const [isLoading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(true);
   const skeletons = [1, 2, 3, 4, 5, 6];
 
   useEffect(() => {
-    setLoading(true);
     getChannels()
       .then((res) => {
         setchannel(res);
@@ -51,7 +50,6 @@ const ChannelGrid = ({ searchText }: Props) => {
           {filteredChannels.map((channel) => (
             <ChannelCard key={channel.id} channel={channel} />
           ))}
-          {/* <ChannelCard key="1" /> */}
         </SimpleGrid>
       </Center>
     );

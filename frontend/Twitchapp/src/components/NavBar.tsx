@@ -9,6 +9,7 @@ import {
 } from "@chakra-ui/react";
 import React, { useEffect, useRef, useState } from "react";
 import logo from "../assets/Twitch_TV.png";
+import { AiFillHome } from "react-icons/ai";
 import { BsSearch } from "react-icons/bs";
 import { Link as RouteLink } from "react-router-dom";
 
@@ -32,7 +33,9 @@ const NavBar = ({ onSearch }: Props) => {
   return (
     <HStack>
       <Image src={logo} boxSize="55px" />
-
+      {/* <Link as={RouteLink} to={"/subscribedChannels"}>
+        <AiFillHome />
+      </Link> */}
       <InputGroup>
         <InputLeftElement children={<BsSearch />} />
         <Input
