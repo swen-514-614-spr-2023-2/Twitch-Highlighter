@@ -25,26 +25,28 @@ const ChannelCard = (channelData: any) => {
 
   return (
     <Center>
-      <Link as={RouteLink} to={channelData.channel.channel_name + "/clips"}>
-        <Card borderRadius={10} overflow="hidden" maxW="sm" width="300px">
-          {/* <Image src={channel.imageUrl} /> */}
+      <Card borderRadius={10} overflow="hidden" maxW="sm" width="300px">
+        {/* <Image src={channel.imageUrl} /> */}
+        <Link as={RouteLink} to={channelData.channel.channel_name + "/clips"}>
           <Image src={channelImage} />
-          <CardBody>
-            <HStack justifyContent={"space-between"}>
+        </Link>
+        <CardBody>
+          <HStack justifyContent={"space-between"}>
+            <Link
+              as={RouteLink}
+              to={channelData.channel.channel_name + "/clips"}
+            >
               <Heading fontSize="2xl">
                 {channelData.channel.channel_name}
               </Heading>
-              {isSubscribed && (
-                <AiFillHeart color="#ff6b81" size={20} onClick={subscribe} />
-              )}
-              {!isSubscribed && (
-                <AiOutlineHeart size={20} onClick={subscribe} />
-              )}
-            </HStack>
-            {/* <Heading fontSize="2xl">Tubbo</Heading> */}
-          </CardBody>
-        </Card>
-      </Link>
+            </Link>
+            {isSubscribed && (
+              <AiFillHeart color="#ff6b81" size={20} onClick={subscribe} />
+            )}
+            {!isSubscribed && <AiOutlineHeart size={20} onClick={subscribe} />}
+          </HStack>
+        </CardBody>
+      </Card>
     </Center>
   );
 };

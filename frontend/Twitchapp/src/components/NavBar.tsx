@@ -5,10 +5,12 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
+  Link,
 } from "@chakra-ui/react";
 import React, { useEffect, useRef, useState } from "react";
 import logo from "../assets/Twitch_TV.png";
 import { BsSearch } from "react-icons/bs";
+import { Link as RouteLink } from "react-router-dom";
 
 interface Props {
   onSearch: (text: string) => void;
@@ -29,7 +31,8 @@ const NavBar = ({ onSearch }: Props) => {
 
   return (
     <HStack>
-      <Image src={logo} boxSize="60px" />
+      <Image src={logo} boxSize="55px" />
+
       <InputGroup>
         <InputLeftElement children={<BsSearch />} />
         <Input
@@ -40,6 +43,9 @@ const NavBar = ({ onSearch }: Props) => {
           onChange={handleSearch}
         ></Input>
       </InputGroup>
+      {/* <Link as={RouteLink} to={"/"}>
+        All Channels
+      </Link> */}
     </HStack>
   );
 };

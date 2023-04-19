@@ -1,6 +1,6 @@
 import { Center, Heading, list, SimpleGrid } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
-import { getChannels } from "../services/api-client";
+import { getSubscribedChannels } from "../services/api-client";
 import ChannelCard from "./ChannelCard";
 import ChannelCardSkeleton from "./ChannelCardSkeleton";
 
@@ -17,12 +17,11 @@ interface Props {
 const ChannelGrid = ({ searchText }: Props) => {
   const [channels, setchannel] = useState<Channel[]>([]);
   const [error, setError] = useState("");
-  const [isLoading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(true);
   const skeletons = [1, 2, 3, 4, 5, 6];
 
   useEffect(() => {
-    setLoading(true);
-    getChannels()
+    getSubscribedChannels()
       .then((res) => {
         setchannel(res);
         setLoading(false);
@@ -58,11 +57,14 @@ const ChannelGrid = ({ searchText }: Props) => {
   else
     return (
       <Center>
-        <SimpleGrid columns={3} spacing={10} padding="10px">
-          {skeletons.map((skeleton) => (
-            <ChannelCardSkeleton key={skeleton} />
-          ))}
-        </SimpleGrid>
+        {isLoading && (
+          <SimpleGrid columns={3} spacing={10} padding="10px">
+            {skeletons.map((skeleton) => (
+              <ChannelCardSkeleton key={skeleton} />
+            ))}
+          </SimpleGrid>
+        )}
+        {!isLoading && <Heading>Subscribed to no Channels</Heading>}
       </Center>
     );
 };
