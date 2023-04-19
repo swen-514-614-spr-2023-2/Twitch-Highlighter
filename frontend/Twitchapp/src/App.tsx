@@ -23,6 +23,7 @@ import NavBar from "./components/NavBar";
 import Register from "./components/Register";
 import Login from "./components/Login";
 import { getIsUserLoggedIn } from "./services/session";
+import SubscribeGrid from "./components/SubscribeGrid";
 
 function App() {
   const [searchText, setSearchText] = useState("");
@@ -80,9 +81,10 @@ function App() {
               }
             />
             {/* <Route path="/" element={getIsUserLoggedIn() ? <ChannelGrid searchText={searchText} /> : <Login showAlertMessage={showAlertMessage} />} /> */}
+            <Route path="/" element={<ChannelGrid searchText={searchText} />} />
             <Route
-              path="/"
-              element={<ChannelGrid searchText="{searchText}" />}
+              path="/subcribedChannels"
+              element={<SubscribeGrid searchText={searchText} />}
             />
             <Route
               path="/register"

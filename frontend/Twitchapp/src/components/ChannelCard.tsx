@@ -9,26 +9,23 @@ import {
 } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { Channel } from "./ChannelGrid";
-import channelImage from "../assets/tubbo.png";
+import tubbo from "../assets/tubbo.png";
+import summit1g from "../assets/summit1g.png";
+import shroud from "../assets/shroud.png";
+import xQc from "../assets/xQc.png";
 import { Link as RouteLink } from "react-router-dom";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 
-interface Props {
-  channel: Channel;
-}
-// { channel }: Props (goes inside())
 const ChannelCard = (channelData: any) => {
   const [isSubscribed, setSubscribe] = useState(false);
   const subscribe = () => {
     setSubscribe(!isSubscribed);
   };
-
   return (
     <Center>
       <Card borderRadius={10} overflow="hidden" maxW="sm" width="300px">
-        {/* <Image src={channel.imageUrl} /> */}
         <Link as={RouteLink} to={channelData.channel.channel_name + "/clips"}>
-          <Image src={channelImage} />
+          <Image src={channelData.channel.channel_name.toLowerCase()} />
         </Link>
         <CardBody>
           <HStack justifyContent={"space-between"}>
