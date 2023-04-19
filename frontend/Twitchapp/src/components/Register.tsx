@@ -42,10 +42,20 @@ function Register({showAlertMessage}: any){
     if(!emailRegex.test(email)){
       showAlertMessage("Invalid Email Address", AlertTypes.ERROR, 2500);
     }else{
-      let isUserRegistered = registerUser(username, password, email);
-      if(isUserRegistered){
-        navigate("/login");
-      }
+      registerUser(username, password, email).then((response: any) => {
+        if(response.hasOwnProperty("isError") && response.isError){
+          if(response.status === 406){
+            showAlertMessage("User with Email Address already exist", AlertTypes.ERROR, 2500);
+          }else if(response.status === 400){
+            showAlertMessage("Invalid Data", AlertTypes.ERROR, 2500);
+          }else{
+            showAlertMessage("Something Went Wrong!", AlertTypes.ERROR, 2500);
+          }
+        }else{
+          navigate("/login");
+          showAlertMessage("User Registered", AlertTypes.SUCCESS, 2500);
+        }
+      }) 
     }
   };
 

@@ -29,21 +29,39 @@ export const logIn = async (name: any, password: any, isUserName: Boolean) => {
   } else {
     email = name;
   }
-  const response = await axios.post(domain + "/user/authenticate", {
-    username,
-    email,
-    password,
-  });
-  debugger;
-  return response.data;
+  let responseAPI = await axios
+    .post(domain + "/user/authenticate", {
+      username,
+      email,
+      password,
+    })
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      let data = error.response;
+      data.isError = true;
+      return data;
+    });
+  return responseAPI;
 };
 
-export const register = (username: any, password: any, email: any) => {
-  return axios.post(domain + "/user/register", {
-    username,
-    email,
-    password,
-  });
+export const register = async (username: any, password: any, email: any) => {
+  let responseAPI = await axios
+    .post(domain + "/user/register", {
+      username,
+      email,
+      password,
+    })
+    .then((response) => {
+      return response;
+    })
+    .catch((error) => {
+      let data = error.response;
+      data.isError = true;
+      return data;
+    });
+  return responseAPI;
 };
 
 export const getSubscribedChannels = async () => {};

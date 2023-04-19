@@ -38,20 +38,33 @@ function Login({showAlertMessage}: any){
     }
 
     let isUserLoggedIn: Boolean = false;
+    let name = username;
+    let isUsername = true;
     if(isEmailLogIn){
       if(!emailRegex.test(email)){
         showAlertMessage("Invalid Email Address", AlertTypes.ERROR, 2500);
       }else{
-        isUserLoggedIn = logInUser(email, password, false);
+        name = email;
+        isUsername = false;
       }
     }else{
-      isUserLoggedIn = logInUser(username, password, true);
+      name = username;
+      isUsername = true;
     }
-    if(isUserLoggedIn){
-      navigate("/");
-    }else{
-      showAlertMessage("Invalid Credentials", AlertTypes.ERROR, 2500);
-    }
+    isUserLoggedIn = logInUser(name, password, isUsername).then((response: any) => {
+      if(response.hasOwnProperty("isError") && response.isError){
+        if(response.status === 404){
+          showAlertMessage("Invalid Credentials", AlertTypes.ERROR, 2500);
+        }else if(response.status === 400){
+          showAlertMessage("Invalid Data", AlertTypes.ERROR, 2500);
+        }else{
+          showAlertMessage("Something Went Wrong!", AlertTypes.ERROR, 2500);
+        }
+      }else{
+        navigate("/");
+        showAlertMessage("User Logged In", AlertTypes.SUCCESS, 2500);
+      }
+    }) 
   };
 
   const setData = (event: any, type: number) => {

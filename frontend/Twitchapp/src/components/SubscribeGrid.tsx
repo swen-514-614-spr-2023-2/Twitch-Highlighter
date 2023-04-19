@@ -21,15 +21,15 @@ const ChannelGrid = ({ searchText }: Props) => {
   const skeletons = [1, 2, 3, 4, 5, 6];
 
   useEffect(() => {
-    getSubscribedChannels()
-      .then((res) => {
-        setchannel(res);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
+    // getSubscribedChannels()
+    //   .then((res) => {
+    //     setchannel(res);
+    //     setLoading(false);
+    //   })
+    //   .catch((err) => {
+    //     setError(err.message);
+    //     setLoading(false);
+    //   });
   }, [searchText]);
 
   const filteredChannels = channels.filter((channel) => {
