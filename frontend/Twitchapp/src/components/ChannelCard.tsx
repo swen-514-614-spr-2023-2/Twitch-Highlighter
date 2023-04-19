@@ -7,7 +7,7 @@ import {
   Image,
   Link,
 } from "@chakra-ui/react";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Channel } from "./ChannelGrid";
 import tubbo from "../assets/tubbo.png";
 import summit1g from "../assets/summit1g.png";
@@ -17,7 +17,9 @@ import { Link as RouteLink } from "react-router-dom";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 
 const ChannelCard = (channelData: any) => {
+  const subRef = useRef(null);
   const [isSubscribed, setSubscribe] = useState(false);
+  const [isSubscribeAPIHit, setIsSubscribeAPIHit] = useState(false);
   const subscribe = () => {
     setSubscribe(!isSubscribed);
   };
@@ -38,9 +40,15 @@ const ChannelCard = (channelData: any) => {
               </Heading>
             </Link>
             {isSubscribed && (
-              <AiFillHeart color="#ff6b81" size={20} onClick={subscribe} />
+              <button onClick={subscribe} disabled={isSubscribeAPIHit}>
+                <AiFillHeart color="#ff6b81" size={20} />
+              </button>
             )}
-            {!isSubscribed && <AiOutlineHeart size={20} onClick={subscribe} />}
+            {!isSubscribed && (
+              <button onClick={subscribe} disabled={isSubscribeAPIHit}>
+                <AiOutlineHeart size={20} onClick={subscribe} />
+              </button>
+            )}
           </HStack>
         </CardBody>
       </Card>
