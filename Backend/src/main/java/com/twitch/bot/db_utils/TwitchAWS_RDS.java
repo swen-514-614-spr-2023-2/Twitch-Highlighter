@@ -140,7 +140,7 @@ public class TwitchAWS_RDS {
     public Boolean checkIfSubscriptionExists(Integer userId, Integer channelId) throws Exception {
         String filterCondition = "";
         filterCondition = USER_SUBSCRIPTION.COLUMN_USER_ID.toString() + " = " + userId;
-        filterCondition = " " + TwitchAWS_RDSConnection.AND + " "
+        filterCondition += " " + TwitchAWS_RDSConnection.AND + " "
                 + USER_SUBSCRIPTION.COLUMN_TWITCH_STREAMERS_ID.toString() + " = " + channelId;
 
         List<Subscriptions> data = new ArrayList<>();
@@ -204,9 +204,9 @@ public class TwitchAWS_RDS {
         }
         if(ifGivenObjectIsValid(twitchId)){
             if(filterCondition.trim() != ""){
-                filterCondition = " " + TwitchAWS_RDSConnection.AND + " ";
+                filterCondition += " " + TwitchAWS_RDSConnection.AND + " ";
             }
-            filterCondition = TWITCH_STREAMERS.COLUMN_TWITCH_ID + " = " + twitchId;
+            filterCondition += TWITCH_STREAMERS.COLUMN_TWITCH_ID + " = " + twitchId;
         }
 
 

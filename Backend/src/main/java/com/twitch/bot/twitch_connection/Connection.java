@@ -24,6 +24,7 @@ import com.twitch.bot.db_utils.TwitchData;
 import com.twitch.bot.dynamo_db_model.TwitchAnalysis;
 import com.twitch.bot.dynamo_db_model.TwitchAnalysis.SentimentalData;
 import com.twitch.bot.model.Channel;
+import com.twitch.bot.model.User;
 
 @Component
 public class Connection {
@@ -34,6 +35,7 @@ public class Connection {
     private BufferedReader twitch_reader;
     private BufferedWriter twitch_writer;
     private TwitchData twitchData;
+    private Users users;
 
     public TwitchData getTwitchData() {
         return twitchData;
@@ -47,9 +49,10 @@ public class Connection {
         return twitch_writer;
     }
 
-    public Connection(ApiHandler apiHandler, TwitchData twitchData, @Value("${mandatory.channel.names}") String channelNames) throws Exception {
+    public Connection(ApiHandler apiHandler, TwitchData twitchData, @Value("${mandatory.channel.names}") String channelNames, Users users) throws Exception {
         this.apiHandler = apiHandler;
         this.twitchData = twitchData;
+        this.users = users;
         this.connect();
         HashMap<String, Channel> channels = ChannelsData.getChannels();
         if(channels.isEmpty()){
@@ -239,11 +242,12 @@ public class Connection {
         return twitchData.getTwitchAnalysisRawDataOfAChannel(ChannelsData.getChannel(channelName), true);
     }
 
-    public List<HashMap<String, Object>> getAllChannels(){
+    public List<HashMap<String, Object>> getAllChannels(User user) throws Exception{
         HashMap<String, Channel> channels = ChannelsData.getChannels();
         LOG.log(Level.INFO, "channels ::: "+ channels);
         Iterator<String> channelsIter = channels.keySet().iterator();
         List<HashMap<String, Object>> result = new ArrayList<>();
+        List<Integer> subscribedChannelIds = users.getAllSubscribedChannelIds(user);
         while(channelsIter.hasNext()){
             String channelName = channelsIter.next();
             Channel channel = channels.get(channelName);
@@ -251,9 +255,9 @@ public class Connection {
             channelDtls.put("id", channel.getId());
             channelDtls.put("channel_name", channel.getChannelName());
             channelDtls.put("twitch_id", channel.getTwitchId());
+            channelDtls.put("is_user_subscribed", subscribedChannelIds.contains(channel.getId()));
             result.add(channelDtls);
         }
-        LOG.log(Level.INFO, "result ::: "+ result);
         return result;
     }
 }

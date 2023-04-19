@@ -79,14 +79,10 @@ function App() {
                 getIsUserLoggedIn() ? <Clips /> : <Navigate to="/login" />
               }
             />
-            {/* <Route path="/" element={getIsUserLoggedIn() ? <ChannelGrid searchText={searchText} /> : <Login showAlertMessage={showAlertMessage} />} /> */}
-            <Route
-              path="/"
-              element={<ChannelGrid searchText="{searchText}" />}
-            />
+           <Route path="/" element={getIsUserLoggedIn() ? <ChannelGrid searchText={searchText} /> : <Login showAlertMessage={showAlertMessage} />} />
             <Route
               path="/register"
-              element={<Register showAlertMessage={showAlertMessage} />}
+              element={getIsUserLoggedIn() ? <Register showAlertMessage={showAlertMessage} /> : <Navigate to={"/"} />}
             />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

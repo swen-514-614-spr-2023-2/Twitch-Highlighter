@@ -1,5 +1,7 @@
 package com.twitch.bot.twitch_connection;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
@@ -47,12 +49,20 @@ public class Users {
         }
     }
 
-    public List<Subscriptions> getUserSubscriptions(User user) throws Exception{
-        return twitchAWS_RDS.getSubscriptionDetailsBasedOnUserOrSubscriptionId(user.getUserId(), true); 
+    public List<Channel> getUserSubscribedChannels(User user) throws Exception{
+        List<Subscriptions> subscriptions = twitchAWS_RDS.getSubscriptionDetailsBasedOnUserOrSubscriptionId(user.getUserId(), true); 
+        Iterator<Subscriptions> subscriptionsIter = subscriptions.iterator();
+        List<Channel> subscribedChannels = new ArrayList<>();
+        while(subscriptionsIter.hasNext()){
+            Subscriptions subscription = subscriptionsIter.next();
+            Channel channel = ChannelsData.getChannel(subscription.getChannelId());
+            subscribedChannels.add(channel);
+        }
+        return subscribedChannels;
     }
 
     public Subscriptions checkAndAddUserSubscriptions(Integer userId, Integer channelId) throws Exception{
-        if(!authenticateUser(userId)){
+        if(authenticateUser(userId)){
             Channel channel = ChannelsData.getChannel(channelId);
             if(channel != null){
                 return addUserSubscriptions(getUserDetails(userId), channel);
@@ -61,11 +71,46 @@ public class Users {
         return null;
     }
 
+    public Boolean checkAndDeleteUserSubscriptions(Integer userId, Integer channelId) throws Exception{
+        if(authenticateUser(userId)){
+            Channel channel = ChannelsData.getChannel(channelId);
+            User user = getUserDetails(userId);
+            if(channel != null && user != null){
+                return deleteUserSubscriptions(user, channel);
+            }
+        }
+        return false;
+    }
+
+    public Boolean isUserSubscribedToChannel(User user, Channel channel) throws Exception{
+        return twitchAWS_RDS.checkIfSubscriptionExists(user.getUserId(), channel.getId());
+    }
+
     public Subscriptions addUserSubscriptions(User user, Channel channel) throws Exception{
-        if(twitchAWS_RDS.checkIfSubscriptionExists(user.getUserId(), channel.getId())){
+        if(isUserSubscribedToChannel(user, channel)){
             throw new Exception("Subscription Already Present");
         }else{
             return twitchAWS_RDS.addSubscriptionDetails(user, channel);
         }
+    }
+
+    public Boolean deleteUserSubscriptions(User user, Channel channel) throws Exception{
+        if(!isUserSubscribedToChannel(user, channel)){
+            throw new Exception("Subscription Not Present");
+        }else{
+            Subscriptions subscriptions = new Subscriptions(user.getUserId(), channel.getId());
+            return twitchAWS_RDS.deleteSubscriptionDetails(subscriptions);
+        }
+    }
+
+    public List<Integer> getAllSubscribedChannelIds(User user) throws Exception{
+        List<Subscriptions> subscriptions = twitchAWS_RDS.getSubscriptionDetailsBasedOnUserOrSubscriptionId(user.getUserId(), true);
+        List<Integer> channelIds = new ArrayList<>();
+        Iterator<Subscriptions> subscriptionsIter = subscriptions.iterator();
+        while(subscriptionsIter.hasNext()){
+            Subscriptions subscription = subscriptionsIter.next();
+            channelIds.add(subscription.getChannelId());
+        }
+        return channelIds;
     }
 }

@@ -43,8 +43,12 @@ public class Controller {
     }
 
     @GetMapping("/channels")
-    public ResponseEntity<Object> getTwitchChannels() throws Exception {
-        return new ResponseEntity<>(twitch_connection.getAllChannels(), responseHeaders, HttpStatus.OK);
+    public ResponseEntity<Object> getTwitchChannels(@RequestHeader Object userId) throws Exception {
+        Boolean isValidUser = users.authenticateUser(Integer.parseInt(userId.toString()));
+        if(!isValidUser){
+            return new ResponseEntity<>(responseHeaders, HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<>(twitch_connection.getAllChannels(users.getUserDetails(Integer.parseInt(userId.toString()))), responseHeaders, HttpStatus.OK);
     }
 
     @GetMapping("/twitch_analysis")
@@ -145,7 +149,7 @@ public class Controller {
             Boolean isValidUser = users.authenticateUser(Integer.parseInt(userId.toString()));
             if (isValidUser) {
                 User user = users.getUserDetails(Integer.parseInt(userId.toString()));
-                return new ResponseEntity<>(users.getUserSubscriptions(user),responseHeaders, HttpStatus.OK);
+                return new ResponseEntity<>(users.getUserSubscribedChannels(user),responseHeaders, HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(responseHeaders, HttpStatus.NOT_FOUND);
             }
@@ -158,9 +162,24 @@ public class Controller {
     @PostMapping("user/subscriptions")
     public ResponseEntity<Object> addUserSubscriptions(@RequestHeader Object userId, @RequestParam("channel_id") String channelId) {
         try {
-            Subscriptions subscription = users.checkAndAddUserSubscriptions(Integer.parseInt(channelId.toString()), Integer.parseInt(channelId));
+            Subscriptions subscription = users.checkAndAddUserSubscriptions(Integer.parseInt(userId.toString()), Integer.parseInt(channelId));
             if(subscription != null){
                 return new ResponseEntity<>(subscription, responseHeaders, HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(responseHeaders, HttpStatus.UNAUTHORIZED);
+            }
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, ex.getLocalizedMessage());
+            return new ResponseEntity<>(responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @DeleteMapping("user/subscriptions")
+    public ResponseEntity<Object> deleteUserSubscriptions(@RequestHeader Object userId, @RequestParam("channel_id") String channelId) {
+        try {
+            Boolean isDeleteDone = users.checkAndDeleteUserSubscriptions(Integer.parseInt(userId.toString()), Integer.parseInt(channelId));
+            if(isDeleteDone){
+                return new ResponseEntity<>(responseHeaders, HttpStatus.OK);
             }else{
                 return new ResponseEntity<>(responseHeaders, HttpStatus.UNAUTHORIZED);
             }

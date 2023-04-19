@@ -12,17 +12,38 @@ import { Channel } from "./ChannelGrid";
 import channelImage from "../assets/tubbo.png";
 import { Link as RouteLink } from "react-router-dom";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+import { subscribeChannel, unSubscribeChannel } from "../services/api-client";
 
 interface Props {
   channel: Channel;
 }
 // { channel }: Props (goes inside())
 const ChannelCard = (channelData: any) => {
-  const [isSubscribed, setSubscribe] = useState(false);
+  const [isSubscribed, setSubscribe] = useState(channelData.channel.is_user_subscribed);
   const subscribe = () => {
-    setSubscribe(!isSubscribed);
+    if(!isSubscribed){
+      subscribeChannel(channelData.channel.id).then(response => {
+        debugger;
+        if(response.hasOwnProperty("isError") && response.isError){
+
+        }else{
+          setSubscribe(!isSubscribed);
+        }
+      })
+    }else{
+      unSubscribeChannel(channelData.channel.id).then(response => {
+        debugger;
+        if(response.hasOwnProperty("isError") && response.isError){
+
+        }else{
+          setSubscribe(!isSubscribed);
+        }
+      })
+    }
+
   };
 
+  
   return (
     <Center>
       <Card borderRadius={10} overflow="hidden" maxW="sm" width="300px">

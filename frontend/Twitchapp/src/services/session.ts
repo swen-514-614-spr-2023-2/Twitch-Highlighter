@@ -30,14 +30,14 @@ export const getIsUserLoggedIn = () => {
     return localStorage.getItem("isLogIn") != null && Boolean(localStorage.getItem("isLogIn") == "true");
 }
 
-export const getIsUserId = () => {
+export const getUserId = () => {
     return localStorage.getItem("userid") != null && localStorage.getItem("userid");
 }
 
-export const getIsUserEmail = () => {
+export const getUserEmail = () => {
     return localStorage.getItem("useremail") != null && localStorage.getItem("useremail");
 }
 
-export const getIsUserName = () => {
+export const getUserName = () => {
     return localStorage.getItem("username") != null && localStorage.getItem("username");
 }

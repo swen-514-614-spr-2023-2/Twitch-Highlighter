@@ -495,7 +495,7 @@ public class TwitchAWS_RDSConnection {
 
         ResultSet result = null;
         if(columnNames.trim() != ""){
-            int affectedRows =  statement.executeUpdate(TWITCH_STREAMERS.CREATE_RECORDS.toString().replace("{0}", columnNames).replace("{1}", values), Statement.RETURN_GENERATED_KEYS);
+            int affectedRows =  statement.executeUpdate(USER_SUBSCRIPTION.CREATE_RECORDS.toString().replace("{0}", columnNames).replace("{1}", values), Statement.RETURN_GENERATED_KEYS);
            
             if (affectedRows == 0) {
                 throw new SQLException("No Rows Created.");
@@ -523,7 +523,7 @@ public class TwitchAWS_RDSConnection {
             columnNames = buildColumnName(columnNames, USER_SUBSCRIPTION.COLUMN_TWITCH_STREAMERS_ID.toString() + " = " + Integer.parseInt(data.get(USER_SUBSCRIPTION.COLUMN_TWITCH_STREAMERS_ID.toString()).toString()));
         }
         if(columnNames.trim() != "" && whereCondition != null && whereCondition.trim() != ""){
-            int affectedRows =  statement.executeUpdate(TWITCH_STREAMERS.UPDATE_RECORDS.toString().replace("{0}", columnNames).replace("{1}", whereCondition), Statement.RETURN_GENERATED_KEYS);
+            int affectedRows =  statement.executeUpdate(USER_SUBSCRIPTION.UPDATE_RECORDS.toString().replace("{0}", columnNames).replace("{1}", whereCondition), Statement.RETURN_GENERATED_KEYS);
            
             if (affectedRows == 0) {
                 throw new SQLException("No Rows Updated.");
@@ -537,7 +537,7 @@ public class TwitchAWS_RDSConnection {
         Statement statement = rdsConnection.createStatement();
         ResultSet result = null;
         if(whereCondition != null && whereCondition.trim() != ""){
-            int affectedRows =  statement.executeUpdate(TWITCH_STREAMERS.DELETE_RECORDS.toString().replace("{0}", whereCondition), Statement.RETURN_GENERATED_KEYS);
+            int affectedRows =  statement.executeUpdate(USER_SUBSCRIPTION.DELETE_RECORDS.toString().replace("{0}", whereCondition), Statement.RETURN_GENERATED_KEYS);
            
             if (affectedRows == 0) {
                 throw new SQLException("No Rows Deleted.");
