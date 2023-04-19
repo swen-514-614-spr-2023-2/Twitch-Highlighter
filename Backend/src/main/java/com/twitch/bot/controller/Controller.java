@@ -25,7 +25,8 @@ import com.twitch.bot.twitch_connection.ChannelsData;
 import com.twitch.bot.twitch_connection.Connection;
 import com.twitch.bot.twitch_connection.Users;
 
-@CrossOrigin("http://localhost:5173/")
+@CrossOrigin
+//("http://localhost:5173/")
 @RestController
 @RequestMapping("/")
 public class Controller {
@@ -37,7 +38,8 @@ public class Controller {
     public Controller(ChannelsData channelsData, Connection twitch_connection, Users users) throws Exception{
         this.twitch_connection = twitch_connection;
         this.users = users;
-        responseHeaders.add("Access-Control-Allow-Origin", "*");
+        // responseHeaders.add("Access-Control-Allow-Origin", "ORIGIN");
+        // responseHeaders.add("Access-Control-Allow-Methods", "PUT, GET, HEAD, POST, DELETE, OPTIONS");
     }
 
     @GetMapping("/channels")

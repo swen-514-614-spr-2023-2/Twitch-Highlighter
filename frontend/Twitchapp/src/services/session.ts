@@ -3,8 +3,7 @@ import { logIn, register } from "./api-client";
 export const logInUser = (name: any, password: any, isUserName: Boolean): any =>{
     let responseApi = logIn(name, password, isUserName);
     responseApi.then((response) => {
-        debugger;
-        if(response.has("user_id")){
+        if(response.hasOwnProperty("user_id")){
             localStorage.setItem("isLogIn", "true");
             localStorage.setItem("userid", response.user_id);
             localStorage.setItem("useremail", response.email);
@@ -15,25 +14,16 @@ export const logInUser = (name: any, password: any, isUserName: Boolean): any =>
             localStorage.removeItem("useremail");
             localStorage.removeItem("username");
         }
-        return getIsUserLoggedIn();
-    }).catch((err) => {
-        debugger;
-            localStorage.setItem("isLogIn", "false");
-            localStorage.removeItem("userid");
-            localStorage.removeItem("useremail");
-            localStorage.removeItem("username");
-            return getIsUserLoggedIn();
-      });
+        return response;
+    });
+    return responseApi;
 }
 
-export const registerUser = async (name: any, password: any, email: any) =>{
-    let responseApi = await register(name, password, email).then((response) => {
-        debugger;
+export const registerUser = (name: any, password: any, email: any): any =>{
+    const responseApi = register(name, password, email).then((response) => {
         return response;
-    }).catch((err) => {
-        debugger;
-        return false;
-      });
+    })
+    return responseApi;
 }
 
 export const getIsUserLoggedIn = () => {
