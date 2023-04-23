@@ -52,14 +52,11 @@ function App() {
   };
   return (
     <Grid templateAreas={`"nav" "main"`}>
-      {/* {getIsUserLoggedIn() && (
+      {getIsUserLoggedIn() && (
         <GridItem area="nav">
           <NavBar onSearch={handleSearch}></NavBar>
         </GridItem>
-      )} */}
-      <GridItem area={"nav"}>
-        <NavBar onSearch={handleSearch} />
-      </GridItem>
+      )}
       <GridItem area="main">
         <ScaleFade
           initialScale={0.9}
@@ -80,14 +77,29 @@ function App() {
                 getIsUserLoggedIn() ? <Clips /> : <Navigate to="/login" />
               }
             />
-           <Route path="/" element={getIsUserLoggedIn() ? <ChannelGrid searchText={searchText} /> : <Login showAlertMessage={showAlertMessage} />} />
+            <Route
+              path="/"
+              element={
+                getIsUserLoggedIn() ? (
+                  <ChannelGrid searchText={searchText} />
+                ) : (
+                  <Login showAlertMessage={showAlertMessage} />
+                )
+              }
+            />
             <Route
               path="/subcribedChannels"
-              element={getIsUserLoggedIn() ? <SubscribeGrid searchText={searchText} /> : <Login showAlertMessage={showAlertMessage} />}
+              element={
+                getIsUserLoggedIn() ? (
+                  <SubscribeGrid searchText={searchText} />
+                ) : (
+                  <Login showAlertMessage={showAlertMessage} />
+                )
+              }
             />
             <Route
               path="/register"
-              element={getIsUserLoggedIn() ? <Register showAlertMessage={showAlertMessage} /> : <Navigate to={"/"} />}
+              element={<Register showAlertMessage={showAlertMessage} />}
             />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

@@ -33,17 +33,15 @@ const Clips = () => {
   const [clips, setClips] = useState<Analysis[]>([]);
   const [error, setError] = useState("");
   const [isEmpty, setEmpty] = useState(true);
-  const [showVideo, setVideoIndex] = useState(0);
+  const [showVideo, setVideoIndex] = useState(-1);
   const { channel_name } = useParams();
   const [currentClip, setCurrentClip] = useState<Analysis>();
   const [index, setIndex] = useState(0);
   const location = window.location.hostname;
 
-  function moveToNext(index: any) {
-    if (clips.length > index + 1) {
-      setIndex(index + 1);
-      setCurrentClip(clips[index]);
-    }
+  function showClip(index: any) {
+    if (index == showVideo) setVideoIndex(-1);
+    setVideoIndex(index);
   }
 
   function moveToPrevious(index: any) {
@@ -87,20 +85,22 @@ const Clips = () => {
               >
                 <HStack justifyContent={"space-between"}>
                   <h4>clip {index + 1}</h4>
-                  <Heading size={"4xl"}>
+                  <Heading size={"1xl"}>
                     Sentiment Analysis: {clip.sentimental_analysis}
                   </Heading>
                   <Button
                     variant="link"
                     float={"right"}
-                    onClick={() => setVideoIndex(index)}
+                    onClick={() => showClip(index)}
                   >
                     <AiFillPlaySquare size={40} />
                   </Button>
                 </HStack>
                 {showVideo === index && (
                   <AspectRatio>
-                    <iframe src={clip?.clip_details.embed_url + "&parent=" + location}></iframe>
+                    <iframe
+                      src={clip?.clip_details.embed_url + "&parent=" + location}
+                    ></iframe>
                   </AspectRatio>
                 )}
               </Box>
