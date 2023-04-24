@@ -22,6 +22,7 @@ interface Clip {
 interface Analysis {
   clip_details: Clip;
   sentimental_analysis: string;
+  video_sentimental_analysis: string;
 }
 
 interface Clips {
@@ -85,6 +86,11 @@ const Clips = () => {
               >
                 <HStack justifyContent={"space-between"}>
                   <h4>clip {index + 1}</h4>
+                  {clip.video_sentimental_analysis !== null && (
+                    <Heading size={"1xl"}>
+                      video SA:{clip.video_sentimental_analysis}
+                    </Heading>
+                  )}
                   <Heading size={"1xl"}>
                     Sentiment Analysis: {clip.sentimental_analysis}
                   </Heading>
