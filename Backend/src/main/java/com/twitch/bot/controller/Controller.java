@@ -4,7 +4,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -107,7 +109,9 @@ public class Controller {
                 credentials.get("access_id").toString());
         AWS_Sns sns = new AWS_Sns(awsCredentials);
         SnsData data = new SnsData();
-        data.setUserId(1);
+        List<Integer> ids = new ArrayList<>();
+        ids.add(1);
+        data.setUserId(ids);
         data.setChannelId(2);
         data.setChannelName("mail");
         sns.publishSNSMessage(data);

@@ -1,5 +1,4 @@
 import { SQSClient, ReceiveMessageCommand, DeleteMessageCommand } from '@aws-sdk/client-sqs';
-import { useEffect } from 'react';
 import { AlertTypes } from './App';
 import { getIsUserLoggedIn, getUserId, getUserIdInNumericalFormat } from './services/session';
 
@@ -14,7 +13,7 @@ const client = new SQSClient({
 });
 
 const command = new ReceiveMessageCommand({
-  QueueUrl: 'https://sqs.us-east-1.amazonaws.com/697006387197/Dummy',
+  QueueUrl: import.meta.env.VITE_AWS_SQS_URL,
   MaxNumberOfMessages: 10,
   WaitTimeSeconds: 10,
 });
@@ -39,8 +38,10 @@ function receiveMessages() {
             if(data != undefined && isJsonString(data)){
                 data = JSON.parse(data);
                 if(data.hasOwnProperty("userId") && data.hasOwnProperty("channelName") && data.hasOwnProperty("channelId") ){
+                    let userIds = [];
+                    userIds = data.userId;
                     if(getUserId() != undefined && getUserId() != false && getIsUserLoggedIn() != undefined && getIsUserLoggedIn() != false ){
-                        if(data.userId === getUserIdInNumericalFormat()){
+                        if(userIds.includes(getUserIdInNumericalFormat())){
                             triggerAlertMessage("A Clip have been generated in Channel '" + data.channelName + "'", AlertTypes.INFO, 5000); 
                         }
                     }  
@@ -59,7 +60,7 @@ function receiveMessages() {
 
 function deleteMessage(message: any) {
   const deleteCommand = new DeleteMessageCommand({
-    QueueUrl: 'https://sqs.us-east-1.amazonaws.com/697006387197/Dummy',
+    QueueUrl: import.meta.env.VITE_AWS_SQS_URL,
     ReceiptHandle: message.ReceiptHandle,
   });
 
