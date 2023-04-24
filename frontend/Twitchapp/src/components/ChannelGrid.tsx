@@ -84,7 +84,7 @@ const ChannelGrid = ({ searchText }: Props) => {
             isChecked={showSubscribed === true}
             onChange={() => {
               setSubscribed(!showSubscribed);
-              window.location.reload;
+              window.location.reload();
             }}
           />
         </HStack>
