@@ -607,6 +607,15 @@
               "Value": {
                 "Ref": "AWS::Region"
               }
+            },
+            {
+              "Name": "VITE_AWS_SQS_URL",
+              "Value":{
+                "Fn::GetAtt": [
+                  "SQSQueue",
+                  "QueueUrl"
+                ]
+              }
             }
           ],
           "BuildSpec": "amplify.yml",
