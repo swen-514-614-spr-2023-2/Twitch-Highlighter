@@ -106,6 +106,9 @@
       },
       "ElasticBeanstalkConfigurationTemplate": {
         "Type": "AWS::ElasticBeanstalk::ConfigurationTemplate",
+        "DependsOn":[
+          "SNSTopic"
+        ],
         "Properties": {
           "ApplicationName": {
             "Ref": "ElasticBeanstalkApplication"
@@ -181,6 +184,23 @@
               "Namespace": "aws:elasticbeanstalk:application:environment",
               "OptionName": "MONGODB_PASSWORD",
               "Value": "{{resolve:secretsmanager:TwitchIntegrationCredentials:SecretString:MONGODB_PASSWORD}}"
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:application:environment",
+              "OptionName": "AWS_REGION",
+              "Value": {
+                "Ref": "AWS::Region"
+              }
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:application:environment",
+              "OptionName": "SNS_QUEUE",
+              "Value":  {
+                "Fn::GetAtt": [
+                  "SNSTopic",
+                  "TopicArn"
+                ]
+              }
             },
             {
               "Namespace": "aws:elasticbeanstalk:application:environment",
@@ -573,6 +593,20 @@
               "Value": {
                 "Fn::Sub": "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/${ApiGatewayStage}"
               }
+            },
+            {
+              "Name": "VITE_AWS_ACCESS_ID",
+              "Value": "{{resolve:secretsmanager:TwitchIntegrationCredentials:SecretString:ACCESS_ID}}"
+            },
+            {
+              "Name": "VITE_AWS_ACCESS_KEY",
+              "Value": "{{resolve:secretsmanager:TwitchIntegrationCredentials:SecretString:ACCESS_KEY}}"
+            },
+            {
+              "Name": "VITE_AWS_REGION",
+              "Value": {
+                "Ref": "AWS::Region"
+              }
             }
           ],
           "BuildSpec": "amplify.yml",
@@ -593,6 +627,71 @@
           "EnablePullRequestPreview": false,
           "EnableAutoBuild": true,
           "EnablePerformanceMode": false
+        }
+      },
+      "SNSTopic": {
+        "Type": "AWS::SNS::Topic",
+        "Properties": {
+          "DisplayName": "",
+          "TopicName": {
+            "Fn::GetAtt": [
+              "SQSQueue",
+              "QueueName"
+            ]
+          }
+        }
+      },
+      "SNSTopicPolicy": {
+        "Type": "AWS::SNS::TopicPolicy",
+        "Properties": {
+          "PolicyDocument": {
+            "Fn::Sub": "{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\"],\"Resource\":\"${SNSTopic}\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"${AWS::AccountId}\"}}}]}"
+          },
+          "Topics": [
+            {
+              "Ref": "SNSTopic"
+            }
+          ]
+        }
+      },
+      "SNSSubscription": {
+        "Type": "AWS::SNS::Subscription",
+        "Properties": {
+          "TopicArn": {
+            "Ref": "SNSTopic"
+          },
+          "Endpoint": {
+            "Fn::Sub": "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${SNSTopic.TopicName}"
+          },
+          "Protocol": "sqs",
+          "RawMessageDelivery": "false",
+          "Region": {
+            "Ref": "AWS::Region"
+          }
+        }
+      },
+      "SQSQueue": {
+        "Type": "AWS::SQS::Queue",
+        "Properties": {
+          "DelaySeconds": "0",
+          "MaximumMessageSize": "262144",
+          "MessageRetentionPeriod": "86400",
+          "ReceiveMessageWaitTimeSeconds": "0",
+          "VisibilityTimeout": "30",
+          "QueueName": "TwitchSns"
+        }
+      },
+      "SQSQueuePolicy": {
+        "Type": "AWS::SQS::QueuePolicy",
+        "Properties": {
+          "PolicyDocument": {
+            "Fn::Sub": "{\"Version\":\"2012-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__owner_statement\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::${AWS::AccountId}:root\"},\"Action\":\"SQS:*\",\"Resource\":\"arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${SNSTopic.TopicName}\"},{\"Sid\":\"__sender_statement\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::${AWS::AccountId}:user/andrews\"},\"Action\":\"SQS:SendMessage\",\"Resource\":\"arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${SNSTopic.TopicName}\"},{\"Sid\":\"__receiver_statement\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::${AWS::AccountId}:user/andrews\"},\"Action\":[\"SQS:ChangeMessageVisibility\",\"SQS:DeleteMessage\",\"SQS:ReceiveMessage\"],\"Resource\":\"arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${SNSTopic.TopicName}\"},{\"Sid\":\"topic-subscription-${SNSTopic}\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":\"SQS:SendMessage\",\"Resource\":\"arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${SNSTopic.TopicName}\",\"Condition\":{\"ArnLike\":{\"aws:SourceArn\":\"${SNSTopic}\"}}}]}"
+          },
+          "Queues": [
+            {
+              "Fn::Sub": "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${SNSTopic.TopicName}"
+            }
+          ]
         }
       }
     }

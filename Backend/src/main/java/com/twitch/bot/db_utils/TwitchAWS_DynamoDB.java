@@ -155,7 +155,7 @@ public class TwitchAWS_DynamoDB {
     }
 
     protected JSONObject getCloudCredentialsFromAWS() {
-        return new JSONObject().put("access_key", System.getenv("AWS_ACCESS_ID")).put("access_id", System.getenv("AWS_ACCESS_KEY"));
+        return new JSONObject().put("access_key", System.getenv("AWS_ACCESS_KEY")).put("access_id", System.getenv("AWS_ACCESS_ID"));
     }
 
     protected void addTwitchMessage(String user, Channel channel, String message, Long timeStamp) {
@@ -300,18 +300,12 @@ public class TwitchAWS_DynamoDB {
         Map<String, AttributeValue> expressionValue = new HashMap<String, AttributeValue>();
         expression += "twitchChannelPk = :v1";
         expressionValue.put(":v1", new AttributeValue().withN(channel.getId().toString()));
-        LOG.log(Level.INFO, "TwitchAnaylsis/ channel Name :::" + channel.getChannelName());
-        LOG.log(Level.INFO, "TwitchAnaylsis/ channel Id :::" + channel.getId());
 
         DynamoDBScanExpression queryExpression = new DynamoDBScanExpression()
                 .withFilterExpression(expression)
                 .withExpressionAttributeValues(expressionValue);
 
-                LOG.log(Level.INFO, "TwitchAnaylsis/ queryExpression :::" + queryExpression);
-
         PaginatedScanList<TwitchAnalysis> result = mapper.scan(TwitchAnalysis.class, queryExpression);
-
-        LOG.log(Level.INFO, "TwitchAnaylsis/ result :::" + result);
 
         result.loadAllResults();
         List<TwitchAnalysis> data = new ArrayList<TwitchAnalysis>(result.size());
@@ -321,7 +315,6 @@ public class TwitchAWS_DynamoDB {
             data.add(element);
         }
 
-        LOG.log(Level.INFO, "twitch Analysis Fetched ::: " + Arrays.toString(data.toArray()));
         return sortTwitchAnalysisBasedOnTimeStamp(data, isAscending);
     }
 
@@ -342,12 +335,13 @@ public class TwitchAWS_DynamoDB {
         return getTwitchAnalysisOfAChannel(channel, isAscending);
     }
 
-    protected void addTwitchAnalysisInDynamoDB(Channel channel, String sentimental_result, ClipsDetails clip_details, Long timeStamp) {
+    protected void addTwitchAnalysisInDynamoDB(Channel channel, String sentimental_result, String video_sentimental_result, ClipsDetails clip_details, Long timeStamp) {
         TwitchAnalysis twitchAnalysis = new TwitchAnalysis();
         try {
             SentimentalData sentimentalData = new SentimentalData();
             sentimentalData.setSentimental_analysis(sentimental_result);
             sentimentalData.setClip_details(clip_details);
+            sentimentalData.setVideo_sentimental_analysis(video_sentimental_result);
             twitchAnalysis.setSentimentalClipsCollection(sentimentalData);
             twitchAnalysis.setTwitchChannelPk(Long.valueOf(channel.getId().toString()));
             twitchAnalysis.setTimestamp(timeStamp);

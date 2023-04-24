@@ -34,6 +34,10 @@ export const getUserId = () => {
     return localStorage.getItem("userid") != null && localStorage.getItem("userid");
 }
 
+export const getUserIdInNumericalFormat = () => {
+    return localStorage.getItem("userid") != null && Number.parseInt(""+localStorage.getItem("userid"));
+}
+
 export const getUserEmail = () => {
     return localStorage.getItem("useremail") != null && localStorage.getItem("useremail");
 }
