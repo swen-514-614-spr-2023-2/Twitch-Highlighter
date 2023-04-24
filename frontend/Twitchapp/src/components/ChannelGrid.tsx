@@ -27,7 +27,7 @@ const ChannelGrid = ({ searchText }: Props) => {
   const [channels, setchannel] = useState<Channel[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setLoading] = useState(true);
-  const [showSubscribed, setSubscribed] = useState(false);
+  const [showSubscribed, setSubscribed] = useState(true);
   const skeletons = [1, 2, 3, 4, 5, 6];
 
   useEffect(() => {
