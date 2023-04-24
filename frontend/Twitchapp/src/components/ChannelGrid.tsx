@@ -13,7 +13,7 @@ import { getChannels } from "../services/api-client";
 import { getIsUserLoggedIn, logOutUser } from "../services/session";
 import ChannelCard from "./ChannelCard";
 import ChannelCardSkeleton from "./ChannelCardSkeleton";
-import '../App.css';
+import "../App.css";
 
 export interface Channel {
   twitch_id: number;
@@ -33,22 +33,26 @@ const ChannelGrid = ({ searchText }: Props) => {
   const [showSubscribed, setSubscribed] = useState(true);
   const skeletons = [1, 2, 3, 4, 5, 6];
   const navigate = useNavigate();
-  
+
   useEffect(() => {
-    if(getIsUserLoggedIn()){
+    if (getIsUserLoggedIn()) {
       getChannels()
-      .then((res) => {
-        setchannel(res);
-        setLoading(false);
-      })
-      .catch((err) => {
-        if(err.hasOwnProperty("response") &&   err.response.hasOwnProperty("data") && (err.response.data.status == 401 || err.response.data.status == 400)){
-          logOutUser();
-          location.reload();
-        }
-        setError(err.message);
-        setLoading(false);
-      });
+        .then((res) => {
+          setchannel(res);
+          setLoading(false);
+        })
+        .catch((err) => {
+          if (
+            err.hasOwnProperty("response") &&
+            err.response.hasOwnProperty("data") &&
+            (err.response.data.status == 401 || err.response.data.status == 400)
+          ) {
+            logOutUser();
+            location.reload();
+          }
+          setError(err.message);
+          setLoading(false);
+        });
     }
   }, [searchText]);
 
@@ -78,17 +82,21 @@ const ChannelGrid = ({ searchText }: Props) => {
           <Text as="b">Show subscribed channels?</Text>
           <Switch
             isChecked={showSubscribed === true}
-            onChange={() => setSubscribed(!showSubscribed)}
+            onChange={() => {
+              setSubscribed(!showSubscribed);
+              window.location.reload;
+            }}
           />
         </HStack>
         <Center>
           <SimpleGrid columns={3} spacing={10} padding="10px">
-            {showChannels.length > 0 &&  showChannels.map((channel) => (
-              <ChannelCard key={channel.id} channel={channel} />
-            ))}
-            {showChannels.length <= 0 &&  
-             <span className="noChannelsSubs">No Channels Subscribed</span>
-            }
+            {showChannels.length > 0 &&
+              showChannels.map((channel) => (
+                <ChannelCard key={channel.id} channel={channel} />
+              ))}
+            {showChannels.length <= 0 && (
+              <span className="noChannelsSubs">No Channels Subscribed</span>
+            )}
           </SimpleGrid>
         </Center>
       </>
