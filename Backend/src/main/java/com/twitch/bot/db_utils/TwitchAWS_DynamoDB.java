@@ -80,7 +80,7 @@ public class TwitchAWS_DynamoDB {
             String prePopulate = System.getenv("PREPOPULATE_DB");
             Boolean isPrepopulateDb = false;
             if (null != prePopulate) {
-                isPrepopulateDb = Boolean.valueOf(prePopulate);
+                isPrepopulateDb = Boolean.valueOf(prePopulate); 
             }
             if (isPrepopulateDb) {
                 JSONArray populatedData = objectMapper.readValue(new File("populationdata/dynamoDb.json"), new TypeReference<JSONArray>() {});
