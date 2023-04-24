@@ -44,6 +44,10 @@ const images = [
     src: "https://static-cdn.jtvnw.net/jtv_user_pictures/225cee6d-2afc-4e0d-bdeb-ebc863ae9f40-profile_image-300x300.png",
     title: "jerma985",
   },
+  {
+    src: "https://static-cdn.jtvnw.net/jtv_user_pictures/f04d2a14-8d63-4cd5-a469-7ec2cd6e5ce3-profile_image-300x300.png",
+    title: "tarik",
+  },
 ];
 
 function showImage(name: string): string {
@@ -65,6 +69,7 @@ const ChannelCard = (channelData: any) => {
         if (response.hasOwnProperty("isError") && response.isError) {
         } else {
           setSubscribe(!isSubscribed);
+          window.location.reload();
         }
       });
     } else {
@@ -72,6 +77,7 @@ const ChannelCard = (channelData: any) => {
         if (response.hasOwnProperty("isError") && response.isError) {
         } else {
           setSubscribe(!isSubscribed);
+          window.location.reload();
         }
       });
     }
@@ -79,21 +85,31 @@ const ChannelCard = (channelData: any) => {
   return (
     <Center>
       <Card borderRadius={10} overflow="hidden" maxW="sm" width="300px">
-        <Link as={RouteLink} to={channelData.channel.channel_name + "/clips"}>
-          {/* <Image src={tubbo} /> */}
+        {isSubscribed ? (
+          <Link as={RouteLink} to={channelData.channel.channel_name + "/clips"}>
+            <Image src={showImage(channelData.channel.channel_name)} />
+          </Link>
+        ) : (
           <Image src={showImage(channelData.channel.channel_name)} />
-        </Link>
+        )}
         <CardBody>
           <HStack justifyContent={"space-between"}>
-            <Link
-              as={RouteLink}
-              to={channelData.channel.channel_name + "/clips"}
-            >
+            {isSubscribed ? (
+              <Link
+                as={RouteLink}
+                to={channelData.channel.channel_name + "/clips"}
+              >
+                <Heading fontSize="2xl">
+                  {channelData.channel.channel_name}
+                </Heading>
+              </Link>
+            ) : (
               <Heading fontSize="2xl">
                 {channelData.channel.channel_name}
               </Heading>
-            </Link>
-            {isLive ? (
+            )}
+
+            {/* {isLive ? (
               <Button
                 colorScheme="red"
                 size={"xs"}
@@ -113,7 +129,7 @@ const ChannelCard = (channelData: any) => {
               >
                 Offline
               </Button>
-            )}
+            )} */}
             {isSubscribed ? (
               <button onClick={subscribe} disabled={isSubscribeAPIHit}>
                 <AiFillHeart color="#ff6b81" size={20} />
