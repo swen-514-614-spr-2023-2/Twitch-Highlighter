@@ -242,11 +242,11 @@ public class TwitchData {
         return twitchDynamoDB.getTwitchAnalysisOfAChannelInJSON(channel, isAscendingOrder);
     }
 
-    public void addTwitchAnalysis(Channel channel, String sentimental_result, ClipsDetails clip_details, Long timeStamp) {
+    public void addTwitchAnalysis(Channel channel, String sentimental_result, String video_sentimental_result, ClipsDetails clip_details, Long timeStamp) {
         if(timeStamp == null){
             timeStamp = System.currentTimeMillis();
         }
-        twitchDynamoDB.addTwitchAnalysisInDynamoDB(channel, sentimental_result, clip_details, timeStamp);
+        twitchDynamoDB.addTwitchAnalysisInDynamoDB(channel, sentimental_result, video_sentimental_result, clip_details, timeStamp);
     }
 
     public JSONObject getCloudCredentials() {

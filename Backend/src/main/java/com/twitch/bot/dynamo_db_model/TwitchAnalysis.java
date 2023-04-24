@@ -57,6 +57,7 @@ public class TwitchAnalysis {
     @DynamoDBDocument
     public static class SentimentalData{
         private String sentimental_analysis;
+        private String video_sentimental_analysis;
         private ClipsDetails clip_details;
 
         public String getSentimental_analysis() {
@@ -64,6 +65,12 @@ public class TwitchAnalysis {
         }
         public void setSentimental_analysis(String sentimental_analysis) {
             this.sentimental_analysis = sentimental_analysis;
+        }
+        public String getVideo_sentimental_analysis() {
+            return video_sentimental_analysis;
+        }
+        public void setVideo_sentimental_analysis(String video_sentimental_analysis) {
+            this.video_sentimental_analysis = video_sentimental_analysis;
         }
         public ClipsDetails getClip_details() {
             return clip_details;

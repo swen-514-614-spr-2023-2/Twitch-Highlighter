@@ -9,7 +9,7 @@ import {
   AlertDescription,
   ScaleFade,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {} from "react-router";
 import {
   BrowserRouter as Router,
@@ -24,8 +24,15 @@ import Register from "./components/Register";
 import Login from "./components/Login";
 import { getIsUserLoggedIn } from "./services/session";
 import SubscribeGrid from "./components/SubscribeGrid";
+import { SQSQueueConsumerInitate } from "./SQSQueueConsumer";
+
 
 function App() {
+
+  useEffect(() => {
+    SQSQueueConsumerInitate({showAlertMessage});
+  }, []);
+
   const [searchText, setSearchText] = useState("");
   const [showErrorAlert, setShowErrorAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
@@ -34,6 +41,7 @@ function App() {
   const handleSearch = (text: string) => {
     setSearchText(text);
   };
+
   const showAlertMessage = (
     message: any,
     alertType: AlertTypes,
@@ -50,16 +58,12 @@ function App() {
       setShowErrorAlertDiv(false);
     }, timeoutInMillis + 100);
   };
+  
   return (
     <Grid templateAreas={`"nav" "main"`}>
-      {/* {getIsUserLoggedIn() && (
-        <GridItem area="nav">
-          <NavBar onSearch={handleSearch}></NavBar>
-        </GridItem>
-      )} */}
-      <GridItem area={"nav"}>
+     {getIsUserLoggedIn() && <GridItem area={"nav"}>
         <NavBar onSearch={handleSearch} />
-      </GridItem>
+      </GridItem> }
       <GridItem area="main">
         <ScaleFade
           initialScale={0.9}
@@ -87,7 +91,7 @@ function App() {
             />
             <Route
               path="/register"
-              element={getIsUserLoggedIn() ? <Register showAlertMessage={showAlertMessage} /> : <Navigate to={"/"} />}
+              element={!getIsUserLoggedIn() ? <Register showAlertMessage={showAlertMessage} /> : <Navigate to={"/"} />}
             />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

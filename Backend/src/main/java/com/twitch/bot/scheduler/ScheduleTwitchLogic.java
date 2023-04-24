@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,22 +21,14 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import software.amazon.awssdk.auth.credentials.SystemPropertyCredentialsProvider;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.comprehend.ComprehendClient;
-import software.amazon.awssdk.services.comprehend.model.ComprehendException;
-import software.amazon.awssdk.services.comprehend.model.DetectSentimentRequest;
-import software.amazon.awssdk.services.comprehend.model.DetectSentimentResponse;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.CreateBucketConfiguration;
-import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
-import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
-import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.transcribe.model.GetTranscriptionJobResult;
 import com.twitch.bot.api.ApiHandler;
 import com.twitch.bot.api.ApiHandler.PATH;
+import com.twitch.bot.aws_technologies.AWS_Comprehend;
+import com.twitch.bot.aws_technologies.AWS_Credentials;
+import com.twitch.bot.aws_technologies.AWS_S3;
+import com.twitch.bot.aws_technologies.AWS_Transcribe;
 import com.twitch.bot.db_utils.TwitchData;
 import com.twitch.bot.dynamo_db_model.MessagesCount;
 import com.twitch.bot.dynamo_db_model.TwitchAnalysis;
@@ -54,22 +45,19 @@ public class ScheduleTwitchLogic {
     private Long offsetMillis= 0l;
     private TwitchData twitchData;
     private ApiHandler apiHandler;
-    private String awsTranscribeBucketName = "TranscribeBucket";
+    private String awsTranscribeBucketName = "twitch-andrews-transcribe-bucket";
 
     public ScheduleTwitchLogic(TwitchData twitchData, ApiHandler apiHandler, @Value("${twitch.analysis.cooldown.seconds}") Long coolDownSeconds, @Value("${twitch.analysis.start.offset.minutes}") Long offsetMinutes){
         this.twitchData = twitchData;
         this.apiHandler = apiHandler;
         this.coolDownMillis = coolDownSeconds * 1000;
         this.offsetMillis = offsetMinutes * 60 * 1000;
+        LOG.setLevel(Level.OFF);
     }
     @Scheduled(fixedRate = 15000)
     public void jobRunner() throws Exception {
         Long currentTime = System.currentTimeMillis();
         LOG.log(Level.INFO, "currentTime In Schedule ::: " + currentTime);
-
-        JSONObject credentials = twitchData.getCloudCredentials();  
-        System.setProperty("aws.accessKeyId", credentials.get("access_id").toString());
-        System.setProperty("aws.secretAccessKey", credentials.get("access_key").toString());
 
         String channelTiming = "";
 
@@ -117,14 +105,8 @@ public class ScheduleTwitchLogic {
                 LOG.log(Level.INFO, "Channel {0} Start Time {1} is under offsetValue {2} for timestamp {3}",
                         new Object[] { channel.getChannelName(), startedAt, offsetMillis, tillTimeStamp });
             }else if (messages.length() >= thresholdValue) {
-                LOG.log(Level.INFO,"threshold exceeded for ::: " + channel.getChannelName());
-                LOG.log(Level.INFO,"MessageLength for ::: " + messages.length());
-                LOG.log(Level.INFO,"thresholdValue ::: " + thresholdValue);
                 List<TwitchAnalysis> twitchAnalysis = twitchData.getTwitchAnalysisRawDataOfAChannel(channel,
                         false);
-                        LOG.log(Level.INFO,"twitchAnalysis ::: " + twitchAnalysis);
-                        LOG.log(Level.INFO,"coolDownMillis ::: " + coolDownMillis);
-                        LOG.log(Level.INFO,"tillTimeStamp ::: " + tillTimeStamp);
                 if (!twitchAnalysis.isEmpty()
                         && (twitchAnalysis.get(0).getTimestamp() + coolDownMillis) > tillTimeStamp) {
                     LOG.log(Level.INFO,
@@ -134,18 +116,61 @@ public class ScheduleTwitchLogic {
                     return;
                 }
                 ClipsDetails clips = awsClipsGeneration(channel);
+                JSONObject credentials = twitchData.getCloudCredentials();  
+                AWS_Credentials awsCredentials = new AWS_Credentials(credentials.get("access_key").toString(), credentials.get("access_id").toString());
                 if(clips != null){
                     LOG.log(Level.INFO,"clips ::: " + clips);
-                    String sentimental_result = awsSentimentalAnalysis(messageMerge(messages));
+                    AWS_Comprehend comprehend = new AWS_Comprehend(messageMerge(messages), awsCredentials);
+                    String sentimental_result = comprehend.getSentiment();
                     LOG.log(Level.INFO,"sentimental_result ::: " + sentimental_result);
-                    //awsTranscribeConversion(clips.get("video_url").toString(), channel);
-                    twitchData.addTwitchAnalysis(channel, sentimental_result, clips, System.currentTimeMillis());
+                    
+                    String videoUrl = clips.getThumbnail_url().substring(0,  clips.getThumbnail_url().lastIndexOf("preview") - 1);
+                    videoUrl += ".mp4";
+                    String transcribedData = null;
+                    
+                    try{
+                        transcribedData = awsTranscribeConversion(videoUrl, channel, awsCredentials);
+                        LOG.log(Level.INFO, "TranscribedData ::: " + transcribedData);
+                    }catch(Exception ex){
+                        LOG.log(Level.SEVERE, "Exception in Transcribe ::: " + ex.getMessage());
+                    }
+
+                     String video_sentimental_result = "NEUTRAL";
+                    if(transcribedData != null){
+                        String message = getTranscribedDataMessage(transcribedData);
+                        if(message != null){
+                            comprehend =  new AWS_Comprehend(message, awsCredentials);
+                            video_sentimental_result = comprehend.getSentiment();
+                        }
+                    }
+                   
+                    twitchData.addTwitchAnalysis(channel, sentimental_result, video_sentimental_result, clips, System.currentTimeMillis());
                 }              
             }
             twitchData.deleteTwitchMessageForChannel(channel, tillTimeStamp);
         } else {
             twitchData.clearMessagesCountForAChannel(channel);
         }
+    }
+
+    private String getTranscribedDataMessage(String transcribedData){
+        try{
+            JSONObject data = new JSONObject(transcribedData);
+            JSONArray transcripts = data.getJSONObject("results").getJSONArray("transcripts");
+            Iterator<Object> transcriptsIter = transcripts.iterator();
+            String message = "";
+            while(transcriptsIter.hasNext()){
+                JSONObject value = (JSONObject)transcriptsIter.next();
+                if(message != ""){
+                    message += " ";
+                }
+                message += value.get("transcript");
+            }
+            return message;
+        }catch(Exception ex){
+            LOG.log(Level.SEVERE, "Exception in Transcribe Data Manipulation ::: " + ex.getMessage());
+        }
+        return null;
     }
 
     public JSONObject getChannelDetails(Channel channel) throws Exception{
@@ -186,114 +211,63 @@ public class ScheduleTwitchLogic {
         return thresholdValue;
     }
 
-    public String awsSentimentalAnalysis(String messageText){
-       
-        Region region = Region.US_EAST_1;
-       
-        ComprehendClient comClient = ComprehendClient.builder()
-            .region(region).credentialsProvider(SystemPropertyCredentialsProvider.create())
-            .build();
 
-        try {
-            DetectSentimentRequest detectSentimentRequest = DetectSentimentRequest.builder()
-                .text(messageText)
-                .languageCode("en")
-                .build();
-
-            DetectSentimentResponse detectSentimentResult = comClient.detectSentiment(detectSentimentRequest);
-            return detectSentimentResult.sentimentAsString();
-
-        } catch (ComprehendException ex) {
-            LOG.log(Level.WARNING, "Exception is ::: ", ex);
-            return "Exception";
+    public String awsTranscribeConversion(String videoUrl, Channel channel, AWS_Credentials awsCredentials) throws Exception{
+        AWS_S3 s3 = new AWS_S3(awsTranscribeBucketName, awsCredentials);
+        if (!s3.isAwsTranscribeBucketExists()) {
+            s3.createAwsTranscribeBucket();
         }
-    }
 
-    public void awsTranscribeConversion(String videoUrl, Channel channel){
-        if(!isAwsTranscribeBucketExists()){
-            createAwsTranscribeBucketExists();
-        }
-        Region region = Region.US_EAST_1;
-        S3Client s3Client = S3Client.builder().region(region)
-        .credentialsProvider(SystemPropertyCredentialsProvider.create()).build();
+        String key = channel.getTwitchId() + "_" + channel.getChannelName() + "_" + channel.getId();
 
-        String key = channel.getTwitchId() + "_" + channel.getId();
+        String s3Key = key + "." + "mp4";
+        s3.uploadFileToAwsBucket(s3Key, downloadUrl(new URL(videoUrl)));
 
-        URL url = null;
+        String transcribeJobName = key + "_" + "transcribe";
+
+        AWS_Transcribe transcribe = new AWS_Transcribe(transcribeJobName, s3Key, s3, awsCredentials, Regions.US_EAST_1);
+        transcribe.initateTranscribe();
+        GetTranscriptionJobResult getTranscriptionResult = null;
+        String response = null;
         try{
-            url = new URL(videoUrl);
-        }catch (Exception ex) {
-            LOG.log(Level.SEVERE, "Exception ::: " + ex);
+            getTranscriptionResult = transcribe.getTranscriptionJobResult();
+        }catch(Exception ex){
+            if(ex.getMessage() != null && ex.getMessage().equals("NO_AUDIO")){
+                response = "NO AUDIO";
+            }else{
+                LOG.log(Level.SEVERE, "Exception in extracting audio ::: " + ex.getMessage());
+                response = "EXCEPTION_IN_TRANSCRIPT";
+                getTranscriptionResult = null;
+            }
         }
-
-
-        s3Client.putObject(PutObjectRequest.builder().bucket(awsTranscribeBucketName).key(key)
-                .build(), RequestBody.fromByteBuffer(downloadUrl(url)));
-
+        if(getTranscriptionResult != null){
+            String transcriptFileUriString = getTranscriptionResult.getTranscriptionJob().getTranscript()
+            .getTranscriptFileUri();
+            response = transcribe.downloadTranscriptionResponse(transcriptFileUriString);
+        }
+        s3.deleteFileFromAwsBucket(s3Key);
+        transcribe.deleteTranscriptionJob();
+        return response;
     }
 
-    private ByteBuffer downloadUrl(URL toDownload) {
+    private InputStream downloadUrl(URL toDownload) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    
+        InputStream stream = null;
         try {
             byte[] chunk = new byte[4096];
             int bytesRead;
-            InputStream stream = toDownload.openStream();
+            stream = toDownload.openStream();
     
-            while ((bytesRead = stream.read(chunk)) > 0) {
-                outputStream.write(chunk, 0, bytesRead);
-            }
+            // while ((bytesRead = stream.read(chunk)) > 0) {
+            //     outputStream.write(chunk, 0, bytesRead);
+            // }
     
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, "Exception ::: " + ex);
             return null;
         }
-    
-        return ByteBuffer.wrap(outputStream.toByteArray());
-    }
-
-    public void deleteAwsTranscribeBucketExists() {
-        Region region = Region.US_EAST_1;
-        S3Client s3Client = S3Client.builder().region(region)
-        .credentialsProvider(SystemPropertyCredentialsProvider.create()).build();
-
-        DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket(awsTranscribeBucketName).build();
-
-        s3Client.deleteBucket(deleteBucketRequest);
-    }
-
-    public void createAwsTranscribeBucketExists() {
-        Region region = Region.US_EAST_1;
-        S3Client s3Client = S3Client.builder().region(region)
-        .credentialsProvider(SystemPropertyCredentialsProvider.create()).build();
-
-        CreateBucketRequest createBucketRequest = CreateBucketRequest
-            .builder()
-            .bucket(awsTranscribeBucketName)
-            .createBucketConfiguration(CreateBucketConfiguration.builder()
-                .locationConstraint(region.id())
-                .build())
-            .build();
-        
-            s3Client.createBucket(createBucketRequest);
-    }
-
-    public Boolean isAwsTranscribeBucketExists() {
-        Region region = Region.US_EAST_1;
-        S3Client s3Client = S3Client.builder().region(region)
-                .credentialsProvider(SystemPropertyCredentialsProvider.create()).build();
-
-        HeadBucketRequest request = HeadBucketRequest.builder()
-                .bucket(awsTranscribeBucketName)
-                .build();
-
-        try {
-            s3Client.headBucket(request);
-            return true;
-        } catch (Exception ex) {
-            return false;
-        }
-
+        return stream;
+        //return ByteBuffer.wrap(outputStream.toByteArray());
     }
 
     public String messageMerge(JSONArray messages){
