@@ -44,6 +44,10 @@ const images = [
     src: "https://static-cdn.jtvnw.net/jtv_user_pictures/225cee6d-2afc-4e0d-bdeb-ebc863ae9f40-profile_image-300x300.png",
     title: "jerma985",
   },
+  {
+    src: "https://static-cdn.jtvnw.net/jtv_user_pictures/f04d2a14-8d63-4cd5-a469-7ec2cd6e5ce3-profile_image-300x300.png",
+    title: "tarik",
+  },
 ];
 
 function showImage(name: string): string {
@@ -79,7 +83,11 @@ const ChannelCard = (channelData: any) => {
   return (
     <Center>
       <Card borderRadius={10} overflow="hidden" maxW="sm" width="300px">
-        <Link as={RouteLink} to={channelData.channel.channel_name + "/clips"}>
+        <Link
+          as={RouteLink}
+          to={channelData.channel.channel_name + "/clips"}
+          _disabled={isSubscribed}
+        >
           {/* <Image src={tubbo} /> */}
           <Image src={showImage(channelData.channel.channel_name)} />
         </Link>
@@ -88,6 +96,7 @@ const ChannelCard = (channelData: any) => {
             <Link
               as={RouteLink}
               to={channelData.channel.channel_name + "/clips"}
+              _disabled={isSubscribed}
             >
               <Heading fontSize="2xl">
                 {channelData.channel.channel_name}
