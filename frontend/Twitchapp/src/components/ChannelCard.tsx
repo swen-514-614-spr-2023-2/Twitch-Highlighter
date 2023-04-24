@@ -1,4 +1,5 @@
 import {
+  Button,
   Card,
   CardBody,
   Center,
@@ -56,6 +57,8 @@ const ChannelCard = (channelData: any) => {
     channelData.channel.is_user_subscribed
   );
   const [isSubscribeAPIHit, setIsSubscribeAPIHit] = useState(false);
+  const [isLive, setIsLive] = useState(false);
+
   const subscribe = () => {
     if (!isSubscribed) {
       subscribeChannel(channelData.channel.id).then((response) => {
@@ -90,6 +93,27 @@ const ChannelCard = (channelData: any) => {
                 {channelData.channel.channel_name}
               </Heading>
             </Link>
+            {isLive ? (
+              <Button
+                colorScheme="red"
+                size={"xs"}
+                borderRadius={"100px"}
+                disabled
+                variant={"solid"}
+              >
+                Live
+              </Button>
+            ) : (
+              <Button
+                colorScheme="gray"
+                size={"xs"}
+                borderRadius={"100px"}
+                disabled
+                variant={"solid"}
+              >
+                Offline
+              </Button>
+            )}
             {isSubscribed && (
               <button onClick={subscribe} disabled={isSubscribeAPIHit}>
                 <AiFillHeart color="#ff6b81" size={20} />
