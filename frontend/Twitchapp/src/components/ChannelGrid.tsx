@@ -45,7 +45,7 @@ const ChannelGrid = ({ searchText }: Props) => {
           if (
             err.hasOwnProperty("response") &&
             err.response.hasOwnProperty("data") &&
-            (err.response.data.status == 401 || err.response.data.status == 400)
+            (err.response.data.status == 401 || err.response.data.status == 400 || err.response.status == 401 || err.response.status == 400)
           ) {
             logOutUser();
             location.reload();

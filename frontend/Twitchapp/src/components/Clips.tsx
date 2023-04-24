@@ -88,6 +88,7 @@ const Clips = () => {
                   <Heading size={"1xl"}>
                     Sentiment Analysis: {clip.sentimental_analysis}
                   </Heading>
+                 
                   <Button
                     variant="link"
                     float={"right"}

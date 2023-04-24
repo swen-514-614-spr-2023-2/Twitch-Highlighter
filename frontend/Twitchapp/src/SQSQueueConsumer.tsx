@@ -5,15 +5,15 @@ import { getIsUserLoggedIn, getUserId, getUserIdInNumericalFormat } from './serv
 let triggerAlertMessage: any;
 
 const client = new SQSClient({
-  region: import.meta.env.VITE_AWS_REGION,
+  region: "us-east-1",
   credentials: {
-    accessKeyId: import.meta.env.VITE_AWS_ACCESS_ID,
-    secretAccessKey: import.meta.env.VITE_AWS_ACCESS_KEY,
+    accessKeyId: "AKIA2ESGRN763DVU6DNV",
+    secretAccessKey: "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",
   },
 });
 
 const command = new ReceiveMessageCommand({
-  QueueUrl: import.meta.env.VITE_AWS_SQS_URL,
+  QueueUrl: "https://sqs.us-east-1.amazonaws.com/697006387197/TwitchData",
   MaxNumberOfMessages: 10,
   WaitTimeSeconds: 10,
 });
@@ -60,7 +60,7 @@ function receiveMessages() {
 
 function deleteMessage(message: any) {
   const deleteCommand = new DeleteMessageCommand({
-    QueueUrl: import.meta.env.VITE_AWS_SQS_URL,
+    QueueUrl: "https://sqs.us-east-1.amazonaws.com/697006387197/TwitchData",
     ReceiptHandle: message.ReceiptHandle,
   });
 

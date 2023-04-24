@@ -50,6 +50,27 @@
           ]
         }
       },
+      "IAMRole4": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+          "Path": "/service-role/",
+          "RoleName": "codebuild-twitchapp",
+          "AssumeRolePolicyDocument": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"codebuild.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}",
+          "MaxSessionDuration": 3600,
+          "ManagedPolicyArns": [
+            "arn:aws:iam::aws:policy/AdministratorAccess"
+          ]
+        }
+      },
+      "IamUser": {
+        "Type": "AWS::IAM::User",
+        "Properties": {
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AdministratorAccess"
+        ],
+        "UserName": "twitchAppRoot"
+      }
+      },
       "IAMInstanceProfile": {
         "Type": "AWS::IAM::InstanceProfile",
         "Properties": {
@@ -173,7 +194,9 @@
               }
             }
           ],
-          "CNAMEPrefix": "twitchaws"
+          "CNAMEPrefix": {
+            "Fn::Sub": "twitchaws-${AWS::AccountId}"
+          }
         }
       },
       "ElasticBeanstalkConfigurationTemplate": {
@@ -276,6 +299,11 @@
                   "TopicArn"
                 ]
               }
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:application:environment",
+              "OptionName": "PREPOPULATE_DB",
+              "Value": "true"
             },
             {
               "Namespace": "aws:elasticbeanstalk:application:environment",
@@ -460,7 +488,7 @@
             "TimeoutInMillis": 29000,
             "Type": "HTTP_PROXY",
             "Uri": {
-              "Fn::Sub": "http://twitchaws.${AWS::Region}.elasticbeanstalk.com/{proxy}"
+              "Fn::Sub": "http://twitchaws-${AWS::AccountId}.${AWS::Region}.elasticbeanstalk.com/{proxy}"
             }
           }
         }
@@ -494,7 +522,10 @@
             "Type": "LINUX_CONTAINER"
           },
           "ServiceRole": {
-            "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/service-role/codebuild-andrews"
+            "Fn::GetAtt": [
+              "IAMRole4",
+              "Arn"
+            ]
           },
           "TimeoutInMinutes": 60,
           "QueuedTimeoutInMinutes": 480,
@@ -774,7 +805,7 @@
         "Type": "AWS::SQS::QueuePolicy",
         "Properties": {
           "PolicyDocument": {
-            "Fn::Sub": "{\"Version\":\"2012-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__owner_statement\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::${AWS::AccountId}:root\"},\"Action\":\"SQS:*\",\"Resource\":\"arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${SNSTopic.TopicName}\"},{\"Sid\":\"__sender_statement\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::${AWS::AccountId}:user/andrews\"},\"Action\":\"SQS:SendMessage\",\"Resource\":\"arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${SNSTopic.TopicName}\"},{\"Sid\":\"__receiver_statement\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::${AWS::AccountId}:user/andrews\"},\"Action\":[\"SQS:ChangeMessageVisibility\",\"SQS:DeleteMessage\",\"SQS:ReceiveMessage\"],\"Resource\":\"arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${SNSTopic.TopicName}\"},{\"Sid\":\"topic-subscription-${SNSTopic}\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":\"SQS:SendMessage\",\"Resource\":\"arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${SNSTopic.TopicName}\",\"Condition\":{\"ArnLike\":{\"aws:SourceArn\":\"${SNSTopic}\"}}}]}"
+            "Fn::Sub": "{\"Version\":\"2012-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__owner_statement\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::${AWS::AccountId}:root\"},\"Action\":\"SQS:*\",\"Resource\":\"arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${SNSTopic.TopicName}\"},{\"Sid\":\"__sender_statement\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::${AWS::AccountId}:user/twitchAppRoot\"},\"Action\":\"SQS:SendMessage\",\"Resource\":\"arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${SNSTopic.TopicName}\"},{\"Sid\":\"__receiver_statement\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::${AWS::AccountId}:user/twitchAppRoot\"},\"Action\":[\"SQS:ChangeMessageVisibility\",\"SQS:DeleteMessage\",\"SQS:ReceiveMessage\"],\"Resource\":\"arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${SNSTopic.TopicName}\"},{\"Sid\":\"topic-subscription-${SNSTopic}\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":\"SQS:SendMessage\",\"Resource\":\"arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${SNSTopic.TopicName}\",\"Condition\":{\"ArnLike\":{\"aws:SourceArn\":\"${SNSTopic}\"}}}]}"
           },
           "Queues": [
             {

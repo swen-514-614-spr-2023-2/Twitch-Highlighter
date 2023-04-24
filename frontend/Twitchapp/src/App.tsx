@@ -42,6 +42,9 @@ function App() {
     setSearchText(text);
   };
 
+  // logOutUser();
+  //           location.reload();
+
   const showAlertMessage = (
     message: any,
     alertType: AlertTypes,

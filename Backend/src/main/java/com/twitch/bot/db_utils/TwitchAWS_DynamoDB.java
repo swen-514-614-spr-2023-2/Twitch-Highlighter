@@ -1,5 +1,6 @@
 package com.twitch.bot.db_utils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -36,6 +37,10 @@ import com.amazonaws.services.dynamodbv2.model.ListTablesRequest;
 import com.amazonaws.services.dynamodbv2.model.ListTablesResult;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
+import com.amazonaws.services.fsx.model.transform.AssociateFileSystemAliasesRequestMarshaller;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.twitch.bot.dynamo_db_model.Messages;
 import com.twitch.bot.dynamo_db_model.MessagesCount;
 import com.twitch.bot.dynamo_db_model.TwitchAnalysis;
@@ -44,7 +49,6 @@ import com.twitch.bot.dynamo_db_model.TwitchAnalysis.SentimentalData;
 import com.twitch.bot.model.Channel;
 
 @Component
-@DependsOn({"TwitchAWS_RDS", "TwitchAWS_RDSConnection"})
 public class TwitchAWS_DynamoDB {
     private static final Logger LOG = Logger.getLogger(TwitchAWS_DynamoDB.class.getName());
     AmazonDynamoDB dynamoDb;
@@ -66,12 +70,54 @@ public class TwitchAWS_DynamoDB {
         }
     }
 
-    public TwitchAWS_DynamoDB(){
+    public TwitchAWS_DynamoDB(ObjectMapper objectMapper, TwitchAWS_RDS rdsConnection){
         this.makeConnectionToDynamoDB(getDyanmoDbTables());
+        prePopulateData(objectMapper, rdsConnection);
     }
 
-    private void prePopulateData(){
-        
+    private void prePopulateData(ObjectMapper objectMapper, TwitchAWS_RDS rdsConnection) {
+        try {
+            String prePopulate = System.getenv("PREPOPULATE_DB");
+            Boolean isPrepopulateDb = false;
+            if (null != prePopulate) {
+                isPrepopulateDb = Boolean.valueOf(prePopulate);
+            }
+            if (isPrepopulateDb) {
+                JSONArray populatedData = objectMapper.readValue(new File("populationdata/dynamoDb.json"), new TypeReference<JSONArray>() {});
+                List<Channel> channels = rdsConnection.getAllChannels();
+                HashMap<String, Channel> channelInfo = new HashMap<>();
+
+                Iterator<Channel> channelsIter = channels.iterator();
+                while(channelsIter.hasNext()){
+                    Channel channel = channelsIter.next();
+                    channelInfo.put(channel.getChannelName(), channel);
+                }
+
+                Iterator<Object> populatedDataIter = populatedData.iterator();
+                while(populatedDataIter.hasNext()){
+                    JSONObject data = (JSONObject)populatedDataIter.next();
+                    String channelName = data.get("channel_name").toString();
+                    
+                    Long timeStamp = data.getLong("timestamp");
+                    if(!isTwitchAnalysisOfAChannelPresentAtTimestamp(channelInfo.get(channelName), timeStamp)){
+                        JSONObject sentimentalClipsCollection = data.getJSONObject("sentimentalClipsCollection"); 
+                        JSONObject clipDetails = sentimentalClipsCollection.getJSONObject("clip_details");
+                        ClipsDetails clips = new ClipsDetails();
+                        clips.setClip_id(clipDetails.get("clip_id").toString());
+                        clips.setCreated_at(clipDetails.get("created_at").toString());
+                        clips.setEmbed_url(clipDetails.get("embed_url").toString());
+                        clips.setVideo_url(clipDetails.get("video_url").toString());
+                        clips.setThumbnail_url(clipDetails.get("thumbnail_url").toString());
+                        if(channelInfo.containsKey(channelName)){
+                            addTwitchAnalysisInDynamoDB(channelInfo.get(channelName), sentimentalClipsCollection.get("sentimental_analysis").toString(), sentimentalClipsCollection.get("video_sentimental_analysis").toString(), clips, timeStamp);
+                        }
+                    }
+                    
+                }
+            }
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, "Exception is ::: " + ex.getMessage());
+        }
     }
 
     private static List<String> getDyanmoDbTables() {
@@ -320,6 +366,33 @@ public class TwitchAWS_DynamoDB {
         }
 
         return sortTwitchAnalysisBasedOnTimeStamp(data, isAscending);
+    }
+
+    protected Boolean isTwitchAnalysisOfAChannelPresentAtTimestamp(Channel channel, Long timestamp) {
+        DynamoDBMapper mapper = new DynamoDBMapper(dynamoDb);
+        String expression = "";
+        Map<String, AttributeValue> expressionValue = new HashMap<String, AttributeValue>();
+        expression += "twitchChannelPk = :v1";
+        expressionValue.put(":v1", new AttributeValue().withN(channel.getId().toString()));
+
+        expression += "timestamp = :v2";
+        expressionValue.put(":v2", new AttributeValue().withN(timestamp.toString()));
+
+        DynamoDBScanExpression queryExpression = new DynamoDBScanExpression()
+                .withFilterExpression(expression)
+                .withExpressionAttributeValues(expressionValue);
+
+        PaginatedScanList<TwitchAnalysis> result = mapper.scan(TwitchAnalysis.class, queryExpression);
+
+        result.loadAllResults();
+        List<TwitchAnalysis> data = new ArrayList<TwitchAnalysis>(result.size());
+        Iterator<TwitchAnalysis> iterator = result.iterator();
+        while (iterator.hasNext()) {
+            TwitchAnalysis element = iterator.next();
+            return true;
+        }
+
+        return false;
     }
 
     private List<TwitchAnalysis> sortTwitchAnalysisBasedOnTimeStamp(List<TwitchAnalysis> result, Boolean isAscending) {
