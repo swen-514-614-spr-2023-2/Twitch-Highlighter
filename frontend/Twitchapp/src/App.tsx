@@ -84,10 +84,25 @@ function App() {
                 getIsUserLoggedIn() ? <Clips /> : <Navigate to="/login" />
               }
             />
-           <Route path="/" element={getIsUserLoggedIn() ? <ChannelGrid searchText={searchText} /> : <Login showAlertMessage={showAlertMessage} />} />
+            <Route
+              path="/"
+              element={
+                getIsUserLoggedIn() ? (
+                  <ChannelGrid searchText={searchText} />
+                ) : (
+                  <Login showAlertMessage={showAlertMessage} />
+                )
+              }
+            />
             <Route
               path="/subcribedChannels"
-              element={getIsUserLoggedIn() ? <SubscribeGrid searchText={searchText} /> : <Login showAlertMessage={showAlertMessage} />}
+              element={
+                getIsUserLoggedIn() ? (
+                  <SubscribeGrid searchText={searchText} />
+                ) : (
+                  <Login showAlertMessage={showAlertMessage} />
+                )
+              }
             />
             <Route
               path="/register"

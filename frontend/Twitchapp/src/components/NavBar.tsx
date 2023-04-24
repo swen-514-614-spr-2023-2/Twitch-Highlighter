@@ -11,7 +11,7 @@ import React, { useEffect, useRef, useState } from "react";
 import logo from "../assets/Twitch_TV.png";
 import { AiFillHome } from "react-icons/ai";
 import { BsSearch } from "react-icons/bs";
-import { Link as RouteLink } from "react-router-dom";
+import { BrowserRouter, NavLink as RouteLink } from "react-router-dom";
 
 interface Props {
   onSearch: (text: string) => void;
@@ -33,9 +33,11 @@ const NavBar = ({ onSearch }: Props) => {
   return (
     <HStack>
       <Image src={logo} boxSize="55px" />
-      {/* <Link as={RouteLink} to={"/subscribedChannels"}>
-        <AiFillHome />
-      </Link> */}
+      <BrowserRouter>
+        <Link as={RouteLink} to={"/"}>
+          <AiFillHome size={"40px"} />
+        </Link>
+      </BrowserRouter>
       <InputGroup>
         <InputLeftElement children={<BsSearch />} />
         <Input

@@ -1,4 +1,12 @@
-import { Center, Heading, list, SimpleGrid } from "@chakra-ui/react";
+import {
+  Center,
+  Heading,
+  HStack,
+  list,
+  SimpleGrid,
+  Switch,
+  Text,
+} from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { getChannels } from "../services/api-client";
 import ChannelCard from "./ChannelCard";
@@ -8,6 +16,7 @@ export interface Channel {
   twitch_id: number;
   channel_name: string;
   id: number;
+  is_user_subscribed: boolean;
 }
 
 interface Props {
@@ -18,6 +27,7 @@ const ChannelGrid = ({ searchText }: Props) => {
   const [channels, setchannel] = useState<Channel[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setLoading] = useState(true);
+  const [showSubscribed, setSubscribed] = useState(false);
   const skeletons = [1, 2, 3, 4, 5, 6];
 
   useEffect(() => {
@@ -43,15 +53,32 @@ const ChannelGrid = ({ searchText }: Props) => {
     }
   });
 
+  const showChannels = filteredChannels.filter((channel) => {
+    if (showSubscribed) {
+      return channel.channel_name && channel.is_user_subscribed;
+    } else {
+      return true;
+    }
+  });
+
   if (filteredChannels.length !== 0)
     return (
-      <Center>
-        <SimpleGrid columns={3} spacing={10} padding="10px">
-          {filteredChannels.map((channel) => (
-            <ChannelCard key={channel.id} channel={channel} />
-          ))}
-        </SimpleGrid>
-      </Center>
+      <>
+        <HStack>
+          <Text as="b">Show subscribed channels?</Text>
+          <Switch
+            isChecked={showSubscribed === true}
+            onChange={() => setSubscribed(!showSubscribed)}
+          />
+        </HStack>
+        <Center>
+          <SimpleGrid columns={3} spacing={10} padding="10px">
+            {showChannels.map((channel) => (
+              <ChannelCard key={channel.id} channel={channel} />
+            ))}
+          </SimpleGrid>
+        </Center>
+      </>
     );
   else
     return (
