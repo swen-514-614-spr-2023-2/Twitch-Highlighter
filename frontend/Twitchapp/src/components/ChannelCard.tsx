@@ -98,7 +98,7 @@ const ChannelCard = (channelData: any) => {
                 colorScheme="red"
                 size={"xs"}
                 borderRadius={"100px"}
-                disabled
+                disabled={true}
                 variant={"solid"}
               >
                 Live
@@ -108,18 +108,17 @@ const ChannelCard = (channelData: any) => {
                 colorScheme="gray"
                 size={"xs"}
                 borderRadius={"100px"}
-                disabled
+                disabled={true}
                 variant={"solid"}
               >
                 Offline
               </Button>
             )}
-            {isSubscribed && (
+            {isSubscribed ? (
               <button onClick={subscribe} disabled={isSubscribeAPIHit}>
                 <AiFillHeart color="#ff6b81" size={20} />
               </button>
-            )}
-            {!isSubscribed && (
+            ) : (
               <button onClick={subscribe} disabled={isSubscribeAPIHit}>
                 <AiOutlineHeart size={20} onClick={subscribe} />
               </button>
