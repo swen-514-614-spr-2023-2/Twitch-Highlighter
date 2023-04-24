@@ -28,12 +28,16 @@ import com.twitch.bot.api.ApiHandler.PATH;
 import com.twitch.bot.aws_technologies.AWS_Comprehend;
 import com.twitch.bot.aws_technologies.AWS_Credentials;
 import com.twitch.bot.aws_technologies.AWS_S3;
+import com.twitch.bot.aws_technologies.AWS_Sns;
 import com.twitch.bot.aws_technologies.AWS_Transcribe;
+import com.twitch.bot.db_utils.TwitchAWS_RDS;
 import com.twitch.bot.db_utils.TwitchData;
 import com.twitch.bot.dynamo_db_model.MessagesCount;
 import com.twitch.bot.dynamo_db_model.TwitchAnalysis;
 import com.twitch.bot.dynamo_db_model.TwitchAnalysis.ClipsDetails;
 import com.twitch.bot.model.Channel;
+import com.twitch.bot.model.Subscriptions;
+import com.twitch.bot.sns_model.SnsData;
 import com.twitch.bot.twitch_connection.ChannelsData;
 
 @Lazy(false)
@@ -45,6 +49,7 @@ public class ScheduleTwitchLogic {
     private Long offsetMillis= 0l;
     private TwitchData twitchData;
     private ApiHandler apiHandler;
+    private TwitchAWS_RDS twitchAWS_RDS;
     private String awsTranscribeBucketName = "twitch-andrews-transcribe-bucket";
 
     public ScheduleTwitchLogic(TwitchData twitchData, ApiHandler apiHandler, @Value("${twitch.analysis.cooldown.seconds}") Long coolDownSeconds, @Value("${twitch.analysis.start.offset.minutes}") Long offsetMinutes){
@@ -52,7 +57,7 @@ public class ScheduleTwitchLogic {
         this.apiHandler = apiHandler;
         this.coolDownMillis = coolDownSeconds * 1000;
         this.offsetMillis = offsetMinutes * 60 * 1000;
-        LOG.setLevel(Level.OFF);
+        this.twitchAWS_RDS = twitchAWS_RDS;
     }
     @Scheduled(fixedRate = 15000)
     public void jobRunner() throws Exception {
@@ -145,12 +150,35 @@ public class ScheduleTwitchLogic {
                     }
                    
                     twitchData.addTwitchAnalysis(channel, sentimental_result, video_sentimental_result, clips, System.currentTimeMillis());
+                    
+                    
+                    AWS_Sns sns = new AWS_Sns(awsCredentials);
+                    SnsData data = new SnsData();
+                    data.setUserId(getSubscribedUserIds(channel));
+                    data.setChannelId(2);
+                    data.setChannelName("mail");
+                    sns.publishSNSMessage(data);
                 }              
             }
             twitchData.deleteTwitchMessageForChannel(channel, tillTimeStamp);
         } else {
             twitchData.clearMessagesCountForAChannel(channel);
         }
+    }
+
+    private List<Integer> getSubscribedUserIds(Channel channel){
+        List<Integer> userIds = new ArrayList<>();
+        try{
+            List<Subscriptions> data = twitchAWS_RDS.getSubscriptionDetailsBasedOnUserOrSubscriptionId(channel.getId(), false);
+            Iterator<Subscriptions> dataIter = data.iterator();
+            while(dataIter.hasNext()){
+                Subscriptions subs = dataIter.next();
+                userIds.add(subs.getUserId());
+            }
+        }catch(Exception ex){
+            LOG.log(Level.SEVERE, "Exception in fetching userIds ::: " + ex.getMessage());
+        }
+       return userIds;
     }
 
     private String getTranscribedDataMessage(String transcribedData){

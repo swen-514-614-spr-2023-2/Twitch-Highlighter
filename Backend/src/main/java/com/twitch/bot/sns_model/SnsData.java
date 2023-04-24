@@ -1,16 +1,18 @@
 package com.twitch.bot.sns_model;
 
+import java.util.List;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SnsData {
-    private Integer userId;
+    private List<Integer> userId;
     private String channelName;
     private Integer channelId;
-    public Integer getUserId() {
+    public List<Integer> getUserId() {
         return userId;
     }
-    public void setUserId(Integer userId) {
+    public void setUserId(List<Integer> userId) {
         this.userId = userId;
     }
     public String getChannelName() {
