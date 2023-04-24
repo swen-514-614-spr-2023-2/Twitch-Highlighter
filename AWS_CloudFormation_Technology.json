@@ -1,6 +1,77 @@
 {
     "Description": "CloudFormation For AWS Twitch Integration",
     "Resources": {
+      "IAMRole": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+          "Path": "/",
+          "RoleName": "aws-twitchapp-elasticbeanstalk-service-role",
+          "AssumeRolePolicyDocument": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"elasticbeanstalk.amazonaws.com\"},\"Action\":\"sts:AssumeRole\",\"Condition\":{\"StringEquals\":{\"sts:ExternalId\":\"elasticbeanstalk\"}}}]}",
+          "MaxSessionDuration": 3600,
+          "ManagedPolicyArns": [
+            "arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth",
+            "arn:aws:iam::aws:policy/IAMFullAccess",
+            "arn:aws:iam::aws:policy/AWSElasticBeanstalkManagedUpdatesCustomerRolePolicy"
+          ]
+        }
+      },
+      "IAMRole2": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+          "Path": "/service-role/",
+          "RoleName": {
+            "Fn::Sub": "AWSCodePipelineServiceRole-${AWS::Region}-twitchapp"
+          },
+          "AssumeRolePolicyDocument": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"codepipeline.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}",
+          "MaxSessionDuration": 3600,
+          "ManagedPolicyArns": [
+            {
+              "Ref": "IAMManagedPolicy"
+            },
+            "arn:aws:iam::aws:policy/CloudWatchFullAccess"
+          ]
+        }
+      },
+      "IAMRole3": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+          "Path": "/",
+          "RoleName": {
+            "Fn::Sub": "aws-elasticbeanstalk-${AWS::Region}-ec2-role-twitchapp"
+          },
+          "AssumeRolePolicyDocument": "{\"Version\":\"2008-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}",
+          "MaxSessionDuration": 3600,
+          "ManagedPolicyArns": [
+            "arn:aws:iam::aws:policy/AWSElasticBeanstalkMulticontainerDocker",
+            "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier",
+            "arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier",
+            "arn:aws:iam::aws:policy/AdministratorAccess-AWSElasticBeanstalk",
+            "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+          ]
+        }
+      },
+      "IAMInstanceProfile": {
+        "Type": "AWS::IAM::InstanceProfile",
+        "Properties": {
+          "Path": "/",
+          "InstanceProfileName": {
+            "Ref": "IAMRole3"
+          },
+          "Roles": [{
+            "Ref": "IAMRole3"
+          }]
+        }
+      },
+      "IAMManagedPolicy": {
+        "Type": "AWS::IAM::ManagedPolicy",
+        "Properties": {
+          "ManagedPolicyName": {
+            "Fn::Sub": "AWSCodePipelineServiceRole-${AWS::Region}-twitchapp"
+          },
+          "Path": "/service-role/",
+          "PolicyDocument": "{\n    \"Statement\": [\n        {\n            \"Action\": [\n                \"iam:PassRole\"\n            ],\n            \"Resource\": \"*\",\n            \"Effect\": \"Allow\",\n            \"Condition\": {\n                \"StringEqualsIfExists\": {\n                    \"iam:PassedToService\": [\n                        \"cloudformation.amazonaws.com\",\n                        \"elasticbeanstalk.amazonaws.com\",\n                        \"ec2.amazonaws.com\",\n                        \"ecs-tasks.amazonaws.com\"\n                    ]\n                }\n            }\n        },\n        {\n            \"Action\": [\n                \"codecommit:CancelUploadArchive\",\n                \"codecommit:GetBranch\",\n                \"codecommit:GetCommit\",\n                \"codecommit:GetRepository\",\n                \"codecommit:GetUploadArchiveStatus\",\n                \"codecommit:UploadArchive\"\n            ],\n            \"Resource\": \"*\",\n            \"Effect\": \"Allow\"\n        },\n        {\n            \"Action\": [\n                \"codedeploy:CreateDeployment\",\n                \"codedeploy:GetApplication\",\n                \"codedeploy:GetApplicationRevision\",\n                \"codedeploy:GetDeployment\",\n                \"codedeploy:GetDeploymentConfig\",\n                \"codedeploy:RegisterApplicationRevision\"\n            ],\n            \"Resource\": \"*\",\n            \"Effect\": \"Allow\"\n        },\n        {\n            \"Action\": [\n                \"codestar-connections:UseConnection\"\n            ],\n            \"Resource\": \"*\",\n            \"Effect\": \"Allow\"\n        },\n        {\n            \"Action\": [\n                \"elasticbeanstalk:*\",\n                \"ec2:*\",\n                \"elasticloadbalancing:*\",\n                \"autoscaling:*\",\n                \"cloudwatch:*\",\n                \"s3:*\",\n                \"sns:*\",\n                \"cloudformation:*\",\n                \"rds:*\",\n                \"sqs:*\",\n                \"ecs:*\"\n            ],\n            \"Resource\": \"*\",\n            \"Effect\": \"Allow\"\n        },\n        {\n            \"Action\": [\n                \"lambda:InvokeFunction\",\n                \"lambda:ListFunctions\"\n            ],\n            \"Resource\": \"*\",\n            \"Effect\": \"Allow\"\n        },\n        {\n            \"Action\": [\n                \"opsworks:CreateDeployment\",\n                \"opsworks:DescribeApps\",\n                \"opsworks:DescribeCommands\",\n                \"opsworks:DescribeDeployments\",\n                \"opsworks:DescribeInstances\",\n                \"opsworks:DescribeStacks\",\n                \"opsworks:UpdateApp\",\n                \"opsworks:UpdateStack\"\n            ],\n            \"Resource\": \"*\",\n            \"Effect\": \"Allow\"\n        },\n        {\n            \"Action\": [\n                \"cloudformation:CreateStack\",\n                \"cloudformation:DeleteStack\",\n                \"cloudformation:DescribeStacks\",\n                \"cloudformation:UpdateStack\",\n                \"cloudformation:CreateChangeSet\",\n                \"cloudformation:DeleteChangeSet\",\n                \"cloudformation:DescribeChangeSet\",\n                \"cloudformation:ExecuteChangeSet\",\n                \"cloudformation:SetStackPolicy\",\n                \"cloudformation:ValidateTemplate\"\n            ],\n            \"Resource\": \"*\",\n            \"Effect\": \"Allow\"\n        },\n        {\n            \"Action\": [\n                \"codebuild:BatchGetBuilds\",\n                \"codebuild:StartBuild\",\n                \"codebuild:BatchGetBuildBatches\",\n                \"codebuild:StartBuildBatch\"\n            ],\n            \"Resource\": \"*\",\n            \"Effect\": \"Allow\"\n        },\n        {\n            \"Effect\": \"Allow\",\n            \"Action\": [\n                \"devicefarm:ListProjects\",\n                \"devicefarm:ListDevicePools\",\n                \"devicefarm:GetRun\",\n                \"devicefarm:GetUpload\",\n                \"devicefarm:CreateUpload\",\n                \"devicefarm:ScheduleRun\"\n            ],\n            \"Resource\": \"*\"\n        },\n        {\n            \"Effect\": \"Allow\",\n            \"Action\": [\n                \"servicecatalog:ListProvisioningArtifacts\",\n                \"servicecatalog:CreateProvisioningArtifact\",\n                \"servicecatalog:DescribeProvisioningArtifact\",\n                \"servicecatalog:DeleteProvisioningArtifact\",\n                \"servicecatalog:UpdateProduct\"\n            ],\n            \"Resource\": \"*\"\n        },\n        {\n            \"Effect\": \"Allow\",\n            \"Action\": [\n                \"cloudformation:ValidateTemplate\"\n            ],\n            \"Resource\": \"*\"\n        },\n        {\n            \"Effect\": \"Allow\",\n            \"Action\": [\n                \"ecr:DescribeImages\"\n            ],\n            \"Resource\": \"*\"\n        },\n        {\n            \"Effect\": \"Allow\",\n            \"Action\": [\n                \"states:DescribeExecution\",\n                \"states:DescribeStateMachine\",\n                \"states:StartExecution\"\n            ],\n            \"Resource\": \"*\"\n        },\n        {\n            \"Effect\": \"Allow\",\n            \"Action\": [\n                \"appconfig:StartDeployment\",\n                \"appconfig:StopDeployment\",\n                \"appconfig:GetDeployment\"\n            ],\n            \"Resource\": \"*\"\n        }\n    ],\n    \"Version\": \"2012-10-17\"\n}\n"
+        }
+      },
       "S3Bucket2": {
         "Type": "AWS::S3::Bucket",
         "Properties": {
@@ -71,6 +142,7 @@
         "Type": "AWS::ElasticBeanstalk::Environment",
         "DependsOn":[
           "ElasticBeanstalkApplication",
+          "IAMRole3",
           "ElasticBeanstalkConfigurationTemplate"
         ],
         "Properties": {
@@ -90,14 +162,14 @@
               "Namespace": "aws:autoscaling:launchconfiguration",
               "OptionName": "IamInstanceProfile",
               "Value": {
-                "Fn::Sub": "aws-elasticbeanstalk-ec2-role"
+                "Ref": "IAMRole3"
               }
             },
             {
               "Namespace": "aws:elasticbeanstalk:environment",
               "OptionName": "ServiceRole",
               "Value": {
-                "Fn::Sub": "aws-elasticbeanstalk-service-role"
+                "Ref": "IAMRole"
               }
             }
           ],
@@ -107,7 +179,8 @@
       "ElasticBeanstalkConfigurationTemplate": {
         "Type": "AWS::ElasticBeanstalk::ConfigurationTemplate",
         "DependsOn":[
-          "SNSTopic"
+          "SNSTopic",
+          "IAMRole3"
         ],
         "Properties": {
           "ApplicationName": {
@@ -148,7 +221,9 @@
             {
               "Namespace": "aws:elasticbeanstalk:managedactions",
               "OptionName": "ServiceRoleForManagedUpdates",
-              "Value": "arn:aws:iam::697006387197:role/aws-elasticbeanstalk-service-role"
+              "Value": {
+                "Ref": "IAMRole"
+              }
             },
             {
               "Namespace": "aws:elasticbeanstalk:managedactions:platformupdate",
@@ -235,7 +310,9 @@
             {
               "Namespace": "aws:elasticbeanstalk:environment",
               "OptionName": "ServiceRole",
-              "Value": "arn:aws:iam::697006387197:role/aws-elasticbeanstalk-service-role"
+              "Value": {
+                "Ref": "IAMRole"
+              }
             },
             {
               "ResourceName": "AWSEBRDSDatabase",
@@ -417,12 +494,12 @@
             "Type": "LINUX_CONTAINER"
           },
           "ServiceRole": {
-            "Fn::Sub": "arn:aws:iam::697006387197:role/service-role/codebuild-andrews"
+            "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/service-role/codebuild-andrews"
           },
           "TimeoutInMinutes": 60,
           "QueuedTimeoutInMinutes": 480,
           "EncryptionKey": {
-            "Fn::Sub": "arn:aws:kms:${AWS::Region}:697006387197:alias/aws/s3"
+            "Fn::Sub": "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/aws/s3"
           },
           "BadgeEnabled": false,
           "LogsConfig": {
@@ -442,7 +519,10 @@
         "Properties": {
           "Name": "TwitchProject",
           "RoleArn": {
-            "Fn::Sub": "arn:aws:iam::697006387197:role/service-role/AWSCodePipelineServiceRole-${AWS::Region}-Twitch-Project"
+            "Fn::GetAtt": [
+              "IAMRole2",
+              "Arn"
+            ]
           },
           "ArtifactStore": {
             "Location": {
