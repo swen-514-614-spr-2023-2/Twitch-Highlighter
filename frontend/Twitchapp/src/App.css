@@ -64,3 +64,9 @@
 .dN{
   display: none;
 }
+
+.noChannelsSubs{
+  margin-right: -190px;
+    margin-top: 50px;
+    font-size: 20px;
+}

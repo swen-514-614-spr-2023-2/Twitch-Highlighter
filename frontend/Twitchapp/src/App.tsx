@@ -22,7 +22,7 @@ import Clips from "./components/Clips";
 import NavBar from "./components/NavBar";
 import Register from "./components/Register";
 import Login from "./components/Login";
-import { getIsUserLoggedIn } from "./services/session";
+import { getIsUserLoggedIn, logOutUser } from "./services/session";
 import SubscribeGrid from "./components/SubscribeGrid";
 import { SQSQueueConsumerInitate } from "./SQSQueueConsumer";
 

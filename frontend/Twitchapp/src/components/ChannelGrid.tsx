@@ -8,9 +8,12 @@ import {
   Text,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getChannels } from "../services/api-client";
+import { getIsUserLoggedIn, logOutUser } from "../services/session";
 import ChannelCard from "./ChannelCard";
 import ChannelCardSkeleton from "./ChannelCardSkeleton";
+import '../App.css';
 
 export interface Channel {
   twitch_id: number;
@@ -29,17 +32,24 @@ const ChannelGrid = ({ searchText }: Props) => {
   const [isLoading, setLoading] = useState(true);
   const [showSubscribed, setSubscribed] = useState(true);
   const skeletons = [1, 2, 3, 4, 5, 6];
-
+  const navigate = useNavigate();
+  
   useEffect(() => {
-    getChannels()
+    if(getIsUserLoggedIn()){
+      getChannels()
       .then((res) => {
         setchannel(res);
         setLoading(false);
       })
       .catch((err) => {
+        if(err.hasOwnProperty("response") &&   err.response.hasOwnProperty("data") && (err.response.data.status == 401 || err.response.data.status == 400)){
+          logOutUser();
+          location.reload();
+        }
         setError(err.message);
         setLoading(false);
       });
+    }
   }, [searchText]);
 
   const filteredChannels = channels.filter((channel) => {
@@ -64,7 +74,7 @@ const ChannelGrid = ({ searchText }: Props) => {
   if (filteredChannels.length !== 0)
     return (
       <>
-        <HStack>
+        <HStack className="mT10">
           <Text as="b">Show subscribed channels?</Text>
           <Switch
             isChecked={showSubscribed === true}
@@ -73,9 +83,12 @@ const ChannelGrid = ({ searchText }: Props) => {
         </HStack>
         <Center>
           <SimpleGrid columns={3} spacing={10} padding="10px">
-            {showChannels.map((channel) => (
+            {showChannels.length > 0 &&  showChannels.map((channel) => (
               <ChannelCard key={channel.id} channel={channel} />
             ))}
+            {showChannels.length <= 0 &&  
+             <span className="noChannelsSubs">No Channels Subscribed</span>
+            }
           </SimpleGrid>
         </Center>
       </>

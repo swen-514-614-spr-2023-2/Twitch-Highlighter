@@ -19,6 +19,13 @@ export const logInUser = (name: any, password: any, isUserName: Boolean): any =>
     return responseApi;
 }
 
+export const logOutUser = () =>{
+    localStorage.setItem("isLogIn", "false");
+    localStorage.removeItem("userid");
+    localStorage.removeItem("useremail");
+    localStorage.removeItem("username");
+}
+
 export const registerUser = (name: any, password: any, email: any): any =>{
     const responseApi = register(name, password, email).then((response) => {
         return response;
