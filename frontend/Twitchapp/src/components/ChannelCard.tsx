@@ -37,8 +37,8 @@ const images = [
     title: "xQc",
   },
   {
-    src: "https://static-cdn.jtvnw.net/jtv_user_pictures/9e6d08d1-dd13-49b9-8d0f-edfbf386352c-profile_image-300x300.png",
-    title: "gothamchess",
+    src: "https://static-cdn.jtvnw.net/jtv_user_pictures/b3c347ed-1a7a-40a2-8bee-8a7c4426eb33-profile_image-300x300.png",
+    title: "nickmercs",
   },
   {
     src: "https://static-cdn.jtvnw.net/jtv_user_pictures/225cee6d-2afc-4e0d-bdeb-ebc863ae9f40-profile_image-300x300.png",

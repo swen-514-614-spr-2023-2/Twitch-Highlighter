@@ -79,7 +79,7 @@ const Clips = () => {
                 key={index}
                 border="1px"
                 borderColor="whiteAlpha.500"
-                borderRadius={3}
+                borderRadius={"20px"}
                 justifyContent="space-between"
                 p="4"
               >
