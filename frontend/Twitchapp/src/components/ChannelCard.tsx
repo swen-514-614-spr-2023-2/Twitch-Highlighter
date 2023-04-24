@@ -69,6 +69,7 @@ const ChannelCard = (channelData: any) => {
         if (response.hasOwnProperty("isError") && response.isError) {
         } else {
           setSubscribe(!isSubscribed);
+          channelData.channel.is_user_subscribe = true;
         }
       });
     } else {
@@ -76,6 +77,7 @@ const ChannelCard = (channelData: any) => {
         if (response.hasOwnProperty("isError") && response.isError) {
         } else {
           setSubscribe(!isSubscribed);
+          channelData.channel.is_user_subscribe = false;
         }
       });
     }
