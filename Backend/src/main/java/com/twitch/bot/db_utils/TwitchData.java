@@ -67,7 +67,7 @@ public class TwitchData {
     }
 
     public TwitchData(@Value("true") Boolean isCalledOnInitalize, @Value("${rolling.message.minutes.frequency}") Integer messageMinsFrequency,
-            @Value("${hour.minutes.seperator}") String hourMinSeperator, TwitchAWS_DynamoDB twitchDynamoDB, TwitchAWS_RDS twitchRdsDB) {
+            @Value("${hour.minutes.seperator}") String hourMinSeperator, TwitchAWS_RDS twitchRdsDB, TwitchAWS_DynamoDB twitchDynamoDB) {
         if (isAwsEnvironment()) {
             LOG.log(Level.INFO, "inside AWS Environment");
             this.twitchDynamoDB = twitchDynamoDB;
@@ -209,6 +209,15 @@ public class TwitchData {
     public Channel addChannelDetails(String channelName, String channelId) {
         try {
             return twitchRdsDB.addChannelDetails(channelName, channelId, false);
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, "Exception ::: " + ex.getMessage());
+        }
+        return null;
+    }
+
+    public Channel getChannelDetails(String channelName, String channelId) {
+        try {
+            return twitchRdsDB.getChannelDetails(channelName, channelId);
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, "Exception ::: " + ex.getMessage());
         }

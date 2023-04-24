@@ -53,7 +53,11 @@ public class ChannelsData {
     }
 
     public Channel addChannel(String channelName, String channelId){
-        Channel channel = this.twitchData.addChannelDetails(channelName, channelId);
+        Channel channel = null;
+        channel = this.twitchData.getChannelDetails(channelName, channelId);
+        if(channel == null){
+            channel = this.twitchData.addChannelDetails(channelName, channelId);
+        }
         if(channel != null){
             channels.put(channel.getChannelName(), channel);
         }

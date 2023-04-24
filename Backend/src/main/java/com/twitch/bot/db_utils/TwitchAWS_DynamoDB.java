@@ -1,7 +1,6 @@
 package com.twitch.bot.db_utils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -13,6 +12,7 @@ import java.util.logging.Logger;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import com.amazonaws.AmazonServiceException;
@@ -22,7 +22,6 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
@@ -45,6 +44,7 @@ import com.twitch.bot.dynamo_db_model.TwitchAnalysis.SentimentalData;
 import com.twitch.bot.model.Channel;
 
 @Component
+@DependsOn({"TwitchAWS_RDS", "TwitchAWS_RDSConnection"})
 public class TwitchAWS_DynamoDB {
     private static final Logger LOG = Logger.getLogger(TwitchAWS_DynamoDB.class.getName());
     AmazonDynamoDB dynamoDb;
@@ -68,6 +68,10 @@ public class TwitchAWS_DynamoDB {
 
     public TwitchAWS_DynamoDB(){
         this.makeConnectionToDynamoDB(getDyanmoDbTables());
+    }
+
+    private void prePopulateData(){
+        
     }
 
     private static List<String> getDyanmoDbTables() {
