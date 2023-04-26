@@ -18,7 +18,6 @@ phases:
       - cd ../
       - echo "$PWD"
       - cp -a Backend/target/*.jar app.jar
-      - cp -a Backend/populationdata/dynamoDb.json dynamoDb.json
       - mkdir -p populationdata
       - cp -a Backend/populationdata/dynamoDb.json populationdata/dynamoDb.json
       - cp -a Backend/src/main/resources/.ebextensions/logs.config logs.config
@@ -32,4 +31,5 @@ artifacts:
     - appspec.yml
     - logs.config
     - tail-logs.config
+    - populationdata/*
     - https-instance-securitygroup.config
