@@ -18,6 +18,7 @@ phases:
       - cd ../
       - echo "$PWD"
       - cp -a Backend/target/*.jar app.jar
+      - mkdir -p populationdata
       - cp -a Backend/populationdata/* populationdata/
       - cp -a Backend/src/main/resources/.ebextensions/logs.config logs.config
       - cp -a Backend/src/main/resources/.ebextensions/tail-logs.config tail-logs.config
