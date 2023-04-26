@@ -36,9 +36,7 @@ const NavBar = ({ onSearch }: Props) => {
   return (
     <HStack>
       {/* <Image src={logo} boxSize="55px" /> */}
-        <Link as={RouteLink} to={"/"}>
         <Image src={logo} boxSize="55px" onClick={navigateToHome} />
-        </Link>
       <InputGroup>
         <InputLeftElement children={<BsSearch />} />
         <Input

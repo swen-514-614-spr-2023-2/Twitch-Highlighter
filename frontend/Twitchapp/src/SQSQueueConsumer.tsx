@@ -65,7 +65,6 @@ function deleteMessage(message: any) {
   });
 
   client.send(deleteCommand).catch((err) => {
-    debugger;
     console.error(err);
   });
 }
