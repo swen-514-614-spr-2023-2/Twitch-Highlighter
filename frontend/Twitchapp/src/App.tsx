@@ -64,6 +64,7 @@ function App() {
   
   return (
     <Grid templateAreas={`"nav" "main"`}>
+      <Router>
      {getIsUserLoggedIn() && <GridItem area={"nav"}>
         <NavBar onSearch={handleSearch} />
       </GridItem> }
@@ -79,7 +80,7 @@ function App() {
           </Alert>
         </ScaleFade>
 
-        <Router>
+
           <Routes>
             <Route
               path="/:channel_name/clips"
@@ -113,8 +114,9 @@ function App() {
             />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
-        </Router>
+
       </GridItem>
+      </Router>
     </Grid>
   );
 }

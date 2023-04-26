@@ -11,7 +11,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-@EnableScheduling
+// @EnableScheduling
 @SpringBootApplication
 public class BotConnectApplication {
 

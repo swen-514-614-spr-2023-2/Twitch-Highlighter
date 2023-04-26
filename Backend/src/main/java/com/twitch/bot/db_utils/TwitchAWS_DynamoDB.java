@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -37,21 +38,25 @@ import com.amazonaws.services.dynamodbv2.model.ListTablesRequest;
 import com.amazonaws.services.dynamodbv2.model.ListTablesResult;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
-import com.amazonaws.services.fsx.model.transform.AssociateFileSystemAliasesRequestMarshaller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.twitch.bot.dynamo_db_model.Messages;
 import com.twitch.bot.dynamo_db_model.MessagesCount;
 import com.twitch.bot.dynamo_db_model.TwitchAnalysis;
 import com.twitch.bot.dynamo_db_model.TwitchAnalysis.ClipsDetails;
 import com.twitch.bot.dynamo_db_model.TwitchAnalysis.SentimentalData;
 import com.twitch.bot.model.Channel;
+import com.twitch.bot.twitch_connection.Connection;
+
+import jakarta.annotation.PostConstruct;
 
 @Component
+@DependsOn({"twitchAWS_RDS"})
 public class TwitchAWS_DynamoDB {
     private static final Logger LOG = Logger.getLogger(TwitchAWS_DynamoDB.class.getName());
     AmazonDynamoDB dynamoDb;
+    ObjectMapper objectMapper;
+    TwitchAWS_RDS rdsConnection;
 
     public enum DYNAMODB_TABLES {
         MESSAGES("Messages"),
@@ -72,8 +77,15 @@ public class TwitchAWS_DynamoDB {
 
     public TwitchAWS_DynamoDB(ObjectMapper objectMapper, TwitchAWS_RDS rdsConnection){
         this.makeConnectionToDynamoDB(getDyanmoDbTables());
+        this.objectMapper = objectMapper;
+        this.rdsConnection = rdsConnection;
+        //prePopulateData(objectMapper, rdsConnection);
+    }
+
+    public void PrePopulateDataInDB(){
         prePopulateData(objectMapper, rdsConnection);
     }
+
 
     private void prePopulateData(ObjectMapper objectMapper, TwitchAWS_RDS rdsConnection) {
         try {
@@ -83,7 +95,7 @@ public class TwitchAWS_DynamoDB {
                 isPrepopulateDb = Boolean.valueOf(prePopulate); 
             }
             if (isPrepopulateDb) {
-                JSONArray populatedData = objectMapper.readValue(new File("populationdata/dynamoDb.json"), new TypeReference<JSONArray>() {});
+                List<Object> populatedData = objectMapper.readValue(new File("populationdata/dynamoDb.json"), new TypeReference<List<Object>>() {});
                 List<Channel> channels = rdsConnection.getAllChannels();
                 HashMap<String, Channel> channelInfo = new HashMap<>();
 
@@ -95,7 +107,7 @@ public class TwitchAWS_DynamoDB {
 
                 Iterator<Object> populatedDataIter = populatedData.iterator();
                 while(populatedDataIter.hasNext()){
-                    JSONObject data = (JSONObject)populatedDataIter.next();
+                    JSONObject data = new JSONObject((LinkedHashMap)populatedDataIter.next());
                     String channelName = data.get("channel_name").toString();
                     
                     Long timeStamp = data.getLong("timestamp");
@@ -372,15 +384,18 @@ public class TwitchAWS_DynamoDB {
         DynamoDBMapper mapper = new DynamoDBMapper(dynamoDb);
         String expression = "";
         Map<String, AttributeValue> expressionValue = new HashMap<String, AttributeValue>();
+        Map<String, String> expressionAttrNames = new HashMap<>();
         expression += "twitchChannelPk = :v1";
         expressionValue.put(":v1", new AttributeValue().withN(channel.getId().toString()));
 
-        expression += "timestamp = :v2";
+        expressionAttrNames.put("#dynamo_timestamp", "timestamp");
+        expression += " and #dynamo_timestamp = :v2";
         expressionValue.put(":v2", new AttributeValue().withN(timestamp.toString()));
 
         DynamoDBScanExpression queryExpression = new DynamoDBScanExpression()
                 .withFilterExpression(expression)
-                .withExpressionAttributeValues(expressionValue);
+                .withExpressionAttributeValues(expressionValue)
+                .withExpressionAttributeNames(expressionAttrNames);
 
         PaginatedScanList<TwitchAnalysis> result = mapper.scan(TwitchAnalysis.class, queryExpression);
 

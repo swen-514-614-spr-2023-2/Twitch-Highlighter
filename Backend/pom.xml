@@ -172,9 +172,7 @@
 			<artifactId>okhttp</artifactId>
 			<version>5.0.0-alpha.11</version>
 		</dependency>
-
-
-		
+	
 	</dependencies>
 
 	<build>

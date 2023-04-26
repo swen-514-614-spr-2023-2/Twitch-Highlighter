@@ -11,10 +11,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
@@ -35,6 +35,7 @@ import com.twitch.bot.model.Channel;
 import static com.mongodb.client.model.Filters.eq;
 
 @Component
+@DependsOn({"twitchAWS_RDS", "twitchAWS_DynamoDB"})
 public class TwitchData {
     private static final Logger LOG = Logger.getLogger(TwitchData.class.getName());
     MongoClient mongoClient;

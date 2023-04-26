@@ -24,8 +24,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
+import org.springframework.context.annotation.DependsOn;
 
 @Component
+@DependsOn({"twitchData"})
 public class ApiHandler {
     private static final Logger LOG = Logger.getLogger(ApiHandler.class.getName());
     TwitchData twitchData;

@@ -292,6 +292,13 @@
             },
             {
               "Namespace": "aws:elasticbeanstalk:application:environment",
+              "OptionName": "AWS_ACCOUNT_ID",
+              "Value": {
+                "Ref": "AWS::AccountId"
+              }
+            },
+            {
+              "Namespace": "aws:elasticbeanstalk:application:environment",
               "OptionName": "SNS_QUEUE",
               "Value":  {
                 "Fn::GetAtt": [
@@ -299,11 +306,6 @@
                   "TopicArn"
                 ]
               }
-            },
-            {
-              "Namespace": "aws:elasticbeanstalk:application:environment",
-              "OptionName": "PREPOPULATE_DB",
-              "Value": "true"
             },
             {
               "Namespace": "aws:elasticbeanstalk:application:environment",

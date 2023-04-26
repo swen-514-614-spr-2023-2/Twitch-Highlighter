@@ -13,7 +13,7 @@ import {
   AspectRatio,
 } from "@chakra-ui/react";
 import { AiFillPlaySquare } from "react-icons/ai";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 interface Clip {
   embed_url: string;

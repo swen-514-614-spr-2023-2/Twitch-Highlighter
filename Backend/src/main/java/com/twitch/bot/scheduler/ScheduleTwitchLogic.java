@@ -49,15 +49,15 @@ public class ScheduleTwitchLogic {
     private Long offsetMillis= 0l;
     private TwitchData twitchData;
     private ApiHandler apiHandler;
-    private TwitchAWS_RDS twitchAWS_RDS;
-    private String awsTranscribeBucketName = "twitch-andrews-transcribe-bucket";
+    private TwitchAWS_RDS rdsConnection;
+    private String awsTranscribeBucketName = "twitch-transcribe-bucket-" + System.getenv("AWS_ACCOUNT_ID");
 
-    public ScheduleTwitchLogic(TwitchData twitchData, ApiHandler apiHandler, @Value("${twitch.analysis.cooldown.seconds}") Long coolDownSeconds, @Value("${twitch.analysis.start.offset.minutes}") Long offsetMinutes){
+    public ScheduleTwitchLogic(TwitchData twitchData, ApiHandler apiHandler, TwitchAWS_RDS twitchAWS_RDS, @Value("${twitch.analysis.cooldown.seconds}") Long coolDownSeconds, @Value("${twitch.analysis.start.offset.minutes}") Long offsetMinutes){
         this.twitchData = twitchData;
         this.apiHandler = apiHandler;
         this.coolDownMillis = coolDownSeconds * 1000;
         this.offsetMillis = offsetMinutes * 60 * 1000;
-        this.twitchAWS_RDS = twitchAWS_RDS;
+        this.rdsConnection = twitchAWS_RDS;
     }
     @Scheduled(fixedRate = 15000)
     public void jobRunner() throws Exception {
@@ -155,8 +155,8 @@ public class ScheduleTwitchLogic {
                     AWS_Sns sns = new AWS_Sns(awsCredentials);
                     SnsData data = new SnsData();
                     data.setUserId(getSubscribedUserIds(channel));
-                    data.setChannelId(2);
-                    data.setChannelName("mail");
+                    data.setChannelId(channel.getId());
+                    data.setChannelName(channel.getChannelName());
                     sns.publishSNSMessage(data);
                 }              
             }
@@ -169,7 +169,7 @@ public class ScheduleTwitchLogic {
     private List<Integer> getSubscribedUserIds(Channel channel){
         List<Integer> userIds = new ArrayList<>();
         try{
-            List<Subscriptions> data = twitchAWS_RDS.getSubscriptionDetailsBasedOnUserOrSubscriptionId(channel.getId(), false);
+            List<Subscriptions> data = rdsConnection.getSubscriptionDetailsBasedOnUserOrSubscriptionId(channel.getId(), false);
             Iterator<Subscriptions> dataIter = data.iterator();
             while(dataIter.hasNext()){
                 Subscriptions subs = dataIter.next();

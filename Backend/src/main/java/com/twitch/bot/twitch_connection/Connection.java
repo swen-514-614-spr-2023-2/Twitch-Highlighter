@@ -20,13 +20,16 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.twitch.bot.api.ApiHandler;
 import com.twitch.bot.api.ApiHandler.PATH;
+import com.twitch.bot.db_utils.TwitchAWS_DynamoDB;
 import com.twitch.bot.db_utils.TwitchData;
 import com.twitch.bot.dynamo_db_model.TwitchAnalysis;
 import com.twitch.bot.dynamo_db_model.TwitchAnalysis.SentimentalData;
 import com.twitch.bot.model.Channel;
 import com.twitch.bot.model.User;
+import org.springframework.context.annotation.DependsOn;
 
 @Component
+@DependsOn({"users", "twitchData", "apiHandler"})
 public class Connection {
     private static final Logger LOG = Logger.getLogger(Connection.class.getName());
     private ApiHandler apiHandler;
@@ -49,7 +52,7 @@ public class Connection {
         return twitch_writer;
     }
 
-    public Connection(ApiHandler apiHandler, TwitchData twitchData, @Value("${mandatory.channel.names}") String channelNames, Users users) throws Exception {
+    public Connection(ApiHandler apiHandler, TwitchData twitchData, @Value("${mandatory.channel.names}") String channelNames, Users users, TwitchAWS_DynamoDB dynamo) throws Exception {
         this.apiHandler = apiHandler;
         this.twitchData = twitchData;
         this.users = users;
@@ -65,7 +68,8 @@ public class Connection {
                 Channel channel = channels.get(channelsIter.next());
                 this.joinChannel(channel.getChannelName());
             }
-        }     
+        } 
+        dynamo.PrePopulateDataInDB();
     }
 
     private void populateMandatoryChannels(List<String> channelNames) throws Exception{
